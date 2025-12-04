@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stripe 3DS Test</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+
+
+<script>
+    const stripe = Stripe("pk_test_T5AXnYAWQSypZOkdH68vgD8y0010oyGwce"); // replace with your test publishable key
+    stripe.confirmCardPayment(
+        "pi_3S51x0A33NG5cHho0FTNmDnf_secret_aQK3fLOiK9RrHRELWkkXo6H7p"
+    ).then(result => {
+        if (result.error) {
+            console.error("❌ Error:", result.error.message);
+        } else {
+            console.log("✅ Success:", result.paymentIntent);
+        }
+    });
+
+</script>
+</body>
+</html>
