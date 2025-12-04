@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Exceptions;
+
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
