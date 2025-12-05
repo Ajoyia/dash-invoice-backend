@@ -10,6 +10,9 @@ class InvoiceExportService implements InvoiceExportServiceInterface
 {
     use CustomHelper;
 
+    private const DEFAULT_LOCALE = 'de';
+    private const DEFAULT_CURRENCY = 'EUR';
+
     public function createCSV($invoices, $file_name, $type, $is_latest_exported_csv = false)
     {
         $columns = [
@@ -27,18 +30,21 @@ class InvoiceExportService implements InvoiceExportServiceInterface
             'Apply Reverse Charge'
         ];
 
+        $locale = self::DEFAULT_LOCALE;
+        $currency = self::DEFAULT_CURRENCY;
+
         $columnMap = [
             'Invoice Number' => fn($inv) => $inv->invoice_number ?? '',
             'Invoice Type' => fn($inv) => $inv->invoice_type,
             'Status' => fn($inv) => $inv->status,
-            'Total Amount' => fn($inv) => $this->formatNumber($inv->total_amount, 'de', 'EUR'),
-            'Total Amount Without Tax' => fn($inv) => $this->formatNumber($inv->netto ?? 0, 'de', 'EUR'),
-            'Total Tax Amount' => fn($inv) => $this->formatNumber($inv->tax_amount, 'de', 'EUR'),
+            'Total Amount' => fn($inv) => $this->formatNumber($inv->total_amount, $locale, $currency),
+            'Total Amount Without Tax' => fn($inv) => $this->formatNumber($inv->netto ?? 0, $locale, $currency),
+            'Total Tax Amount' => fn($inv) => $this->formatNumber($inv->tax_amount, $locale, $currency),
             'Company' => fn($inv) => $inv->company->company_name ?? '',
-            'Start Date' => fn($inv) => $this->formatDate($inv->start_date, 'de', 'EUR'),
-            'End Date' => fn($inv) => $this->formatDate($inv->end_date, 'de', 'EUR'),
-            'Due Date' => fn($inv) => $this->formatDate($inv->due_date, 'de', 'EUR'),
-            'Draft Status Changed Date' => fn($inv) => $this->formatDate($inv->invoice_date, 'de', 'EUR'),
+            'Start Date' => fn($inv) => $this->formatDate($inv->start_date, $locale, $currency),
+            'End Date' => fn($inv) => $this->formatDate($inv->end_date, $locale, $currency),
+            'Due Date' => fn($inv) => $this->formatDate($inv->due_date, $locale, $currency),
+            'Draft Status Changed Date' => fn($inv) => $this->formatDate($inv->invoice_date, $locale, $currency),
             'Apply Reverse Charge' => fn($inv) => $inv->apply_reverse_charge ? 'true' : 'false',
         ];
 

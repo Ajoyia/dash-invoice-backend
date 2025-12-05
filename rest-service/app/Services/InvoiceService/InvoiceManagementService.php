@@ -28,18 +28,17 @@ class InvoiceManagementService extends AbstractInvoiceService implements Invoice
 
     public function deleteInvoice(string $id)
     {
-        $invoice = Invoice::find($id);
+        try {
+            $invoice = Invoice::findOrFail($id);
+            $invoice->delete();
 
-        if (!$invoice) {
+            return response()->json(['message' => 'Record deleted.'], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['error' => 'Invoice not found.'], 404);
         }
-
-        $invoice->delete();
-
-        return response()->json(['message' => 'Record deleted.'], 200);
     }
 
-    public function updateInvoiceStatus($request, $id)
+    public function updateInvoiceStatus(Request $request, string $id)
     {
         $request->validate([
             "status" => "required|in:approved,sent,paid,warning level 1,warning level 2,warning level 3",

@@ -9,16 +9,28 @@ use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class InvoicePlanExport implements FromArray, WithHeadings, WithCustomStartCell, WithEvents
 {
+    private const COLUMNS_PER_MONTH = 3;
+    private const MONTHS = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
     protected $companyId;
     protected $isAdmin;
+    protected $currentYear;
+    protected $currentMonth;
 
     public function __construct($companyId, $isAdmin)
     {
         $this->companyId = $companyId;
         $this->isAdmin = $isAdmin;
+        $now = Carbon::now();
+        $this->currentYear = $now->year;
+        $this->currentMonth = $now->month;
     }
 
     public function startCell(): string
@@ -28,104 +40,130 @@ class InvoicePlanExport implements FromArray, WithHeadings, WithCustomStartCell,
 
     public function array(): array
     {
+        $query = Invoice::query()
+            ->with('company:id,company_name')
+            ->where('status', '!=', 'draft')
+            ->whereYear('created_at', $this->currentYear);
+
+        if (!$this->isAdmin) {
+            $query->where('company_id', $this->companyId);
+        }
+
+        $invoices = $query->get();
         $invoicesData = [];
 
-        $invoices = new Invoice();
-        if (!$this->isAdmin) {
-            $invoices = $invoices->where('company_id', $this->companyId);
-        }
-
-        $invoices = $invoices->where('status', '!=', 'draft')->whereYear('created_at', Carbon::now()->year)->get();
         foreach ($invoices as $invoice) {
-            $data = [
-                $invoice->invoice_number,
-                $invoice->company->company_name,
-                $invoice->due_date,
-                $invoice->netto,
-                $invoice->total_amount,
-                $invoice->status,
-            ];
-            $dueDateMonth = Carbon::parse($invoice->due_date)->month;
-            if ($invoice->status != 'paid') {
-                if ($dueDateMonth >= Carbon::now()->month) {
-                    for ($i = 1; $i <= ($dueDateMonth * 3) - 3; $i++) {
-                        $data[] = "";
-                    }
-                    $data[] = $invoice->total_amount;
-                    array_push($invoicesData, $data);
-                    continue;
-                }
-            }
+            $data = $this->buildBaseData($invoice);
+            $monthlyData = $this->calculateMonthlyData($invoice);
+            $invoicesData[] = array_merge($data, $monthlyData);
+        }
 
-            if ($invoice->status == 'paid') {
-                $paidAtMonth = Carbon::parse($invoice->paid_at)->month;
-                if ($dueDateMonth < $paidAtMonth || $dueDateMonth > $paidAtMonth) {
-                    for ($j = 1; $j <= ($paidAtMonth * 3) - 2; $j++) {
-                        $data[] = "";
-                    }
-                    $data[] = $invoice->total_amount;
-                    array_push($invoicesData, $data);
-                } else {
-                    for ($j = 1; $j <= ($paidAtMonth * 3) - 1; $j++) {
-                        $data[] = "";
-                    }
-                    $data[] = $invoice->total_amount;
-                    array_push($invoicesData, $data);
-                }
+        return $invoicesData;
+    }
+
+    private function buildBaseData(Invoice $invoice): array
+    {
+        return [
+            $invoice->invoice_number,
+            $invoice->company->company_name ?? '',
+            $invoice->due_date,
+            $invoice->netto,
+            $invoice->total_amount,
+            $invoice->status,
+        ];
+    }
+
+    private function calculateMonthlyData(Invoice $invoice): array
+    {
+        $dueDateMonth = Carbon::parse($invoice->due_date)->month;
+        $totalColumns = 12 * self::COLUMNS_PER_MONTH;
+        $monthlyData = array_fill(0, $totalColumns, '');
+
+        if ($invoice->status !== 'paid') {
+            $this->addUnpaidInvoiceData($monthlyData, $dueDateMonth, $invoice->total_amount);
+        } else {
+            $paidAtMonth = Carbon::parse($invoice->paid_at)->month;
+            $this->addPaidInvoiceData($monthlyData, $dueDateMonth, $paidAtMonth, $invoice->total_amount);
+        }
+
+        return $monthlyData;
+    }
+
+    private function addUnpaidInvoiceData(array &$monthlyData, int $dueDateMonth, float $totalAmount): void
+    {
+        if ($dueDateMonth >= $this->currentMonth) {
+            $position = ($dueDateMonth * self::COLUMNS_PER_MONTH) - self::COLUMNS_PER_MONTH;
+            if ($position >= 0 && $position < count($monthlyData)) {
+                $monthlyData[$position] = $totalAmount;
             }
         }
-        return $invoicesData;
+    }
+
+    private function addPaidInvoiceData(array &$monthlyData, int $dueDateMonth, int $paidAtMonth, float $totalAmount): void
+    {
+        if ($dueDateMonth !== $paidAtMonth) {
+            $position = ($paidAtMonth * self::COLUMNS_PER_MONTH) - (self::COLUMNS_PER_MONTH - 1);
+        } else {
+            $position = ($paidAtMonth * self::COLUMNS_PER_MONTH) - 1;
+        }
+
+        if ($position >= 0 && $position < count($monthlyData)) {
+            $monthlyData[$position] = $totalAmount;
+        }
     }
 
     public function registerEvents(): array
     {
-
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $sheet = $event->sheet;
-                $sheet->mergeCells('G1:I1');
-                $sheet->setCellValue('H1', "January");
-                //                $sheet->getStyle('G1:I1')->getAlignment()->setHorizontal('center');
-                $sheet->getStyle('G1:I1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-                $sheet->mergeCells('J1:L1');
-                $sheet->setCellValue('K1', "February");
-
-                $sheet->mergeCells('M1:O1');
-                $sheet->setCellValue('N1', "March");
-
-                $sheet->mergeCells('P1:R1');
-                $sheet->setCellValue('Q1', "April");
-
-                $sheet->mergeCells('S1:U1');
-                $sheet->setCellValue('T1', "May");
-
-                $sheet->mergeCells('V1:X1');
-                $sheet->setCellValue('W1', "June");
-
-                $sheet->mergeCells('Y1:AA1');
-                $sheet->setCellValue('Z1', "July");
-
-                $sheet->mergeCells('AB1:AD1');
-                $sheet->setCellValue('AC1', "August");
-
-                $sheet->mergeCells('AE1:AG1');
-                $sheet->setCellValue('AF1', "September");
-
-                $sheet->mergeCells('AH1:AJ1');
-                $sheet->setCellValue('AI1', "October");
-
-                $sheet->mergeCells('AK1:AM1');
-                $sheet->setCellValue('AL1', "November");
-
-                $sheet->mergeCells('AN1:AP1');
-                $sheet->setCellValue('AO1', "December");
+                $this->setupMonthHeaders($event->sheet);
             },
         ];
     }
 
+    private function setupMonthHeaders($sheet): void
+    {
+        $columnIndex = 7;
+
+        foreach (self::MONTHS as $month) {
+            $cellRange = $this->getMonthCellRange($columnIndex);
+            $centerCell = $this->getCenterCell($columnIndex);
+
+            $sheet->mergeCells($cellRange);
+            $sheet->setCellValue($centerCell, $month);
+            $sheet->getStyle($cellRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+            $columnIndex += self::COLUMNS_PER_MONTH;
+        }
+    }
+
+    private function getMonthCellRange(int $columnIndex): string
+    {
+        $startCol = $this->numberToColumn($columnIndex);
+        $endCol = $this->numberToColumn($columnIndex + self::COLUMNS_PER_MONTH - 1);
+        return "{$startCol}1:{$endCol}1";
+    }
+
+    private function getCenterCell(int $columnIndex): string
+    {
+        $centerCol = $this->numberToColumn($columnIndex + 1);
+        return "{$centerCol}1";
+    }
+
+    private function numberToColumn(int $number): string
+    {
+        $column = '';
+        while ($number > 0) {
+            $number--;
+            $column = chr(65 + ($number % 26)) . $column;
+            $number = intval($number / 26);
+        }
+        return $column;
+    }
+
     public function headings(): array
     {
-        $array = [
+        $headings = [
             'Invoice Number',
             'Customer Name',
             'Due Date',
@@ -134,11 +172,11 @@ class InvoicePlanExport implements FromArray, WithHeadings, WithCustomStartCell,
             'Status',
         ];
 
-        for ($i = 1; $i <= 12; $i++) {
-            $array[] = 'Planned';
-            $array[] = 'Old';
-            $array[] = 'Current';
+        $monthColumns = ['Planned', 'Old', 'Current'];
+        for ($i = 0; $i < 12; $i++) {
+            $headings = array_merge($headings, $monthColumns);
         }
-        return $array;
+
+        return $headings;
     }
 }

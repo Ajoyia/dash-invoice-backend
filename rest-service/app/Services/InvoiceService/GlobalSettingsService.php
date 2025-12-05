@@ -9,50 +9,47 @@ use Illuminate\Http\Request;
 
 class GlobalSettingsService implements GlobalSettingsServiceInterface
 {
+    private const TEMPLATE_KEYS = [
+        'invoiceTemplateId',
+        'invoiceCorrectionTemplateId',
+        'invoiceStornoTemplateId',
+        'paymentHistoryTemplateId',
+    ];
+
     public function documentAssignmentList()
     {
-        $model = GlobalSetting::where("key", "LIKE", "invoiceTemplateId")
-            ->orWhere("key", "LIKE", "invoiceCorrectionTemplateId")
-            ->orWhere("key", "LIKE", "invoiceStornoTemplateId")
-            ->orWhere("key", "LIKE", "paymentHistoryTemplateId");
-
-        $model = $model->get();
-
-        $response = [];
-        foreach ($model as $item) {
-            $response[$item->key] = $item->value;
-        }
+        $settings = GlobalSetting::whereIn('key', self::TEMPLATE_KEYS)
+            ->pluck('value', 'key')
+            ->toArray();
 
         return response()->json([
-            'data' => $response
+            'data' => $settings
         ]);
     }
 
-    public function documentAssignmentSave($request)
+    public function documentAssignmentSave(Request $request)
     {
         $request->validate([
-            "invoiceTemplateId" => "required",
-            "invoiceCorrectionTemplateId" => "required",
-            "invoiceStornoTemplateId" => "required",
-            'paymentHistoryTemplateId' => "required"
+            'invoiceTemplateId' => 'required|string',
+            'invoiceCorrectionTemplateId' => 'required|string',
+            'invoiceStornoTemplateId' => 'required|string',
+            'paymentHistoryTemplateId' => 'required|string',
         ]);
 
         try {
-            $model = GlobalSetting::firstOrNew(['key' => 'invoiceTemplateId']);
-            $model->value = $request->invoiceTemplateId;
-            $model->save();
+            $settings = [
+                'invoiceTemplateId' => $request->invoiceTemplateId,
+                'invoiceCorrectionTemplateId' => $request->invoiceCorrectionTemplateId,
+                'invoiceStornoTemplateId' => $request->invoiceStornoTemplateId,
+                'paymentHistoryTemplateId' => $request->paymentHistoryTemplateId,
+            ];
 
-            $model = GlobalSetting::firstOrNew(['key' => 'invoiceCorrectionTemplateId']);
-            $model->value = $request->invoiceCorrectionTemplateId;
-            $model->save();
-
-            $model = GlobalSetting::firstOrNew(['key' => 'invoiceStornoTemplateId']);
-            $model->value = $request->invoiceStornoTemplateId;
-            $model->save();
-
-            $model = GlobalSetting::firstOrNew(['key' => 'paymentHistoryTemplateId']);
-            $model->value = $request->paymentHistoryTemplateId;
-            $model->save();
+            foreach ($settings as $key => $value) {
+                GlobalSetting::updateOrCreate(
+                    ['key' => $key],
+                    ['value' => $value]
+                );
+            }
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -62,7 +59,7 @@ class GlobalSettingsService implements GlobalSettingsServiceInterface
 
         return response()->json([
             'success' => true,
-            'message' => "Record Saved."
+            'message' => 'Record Saved.'
         ]);
     }
 }

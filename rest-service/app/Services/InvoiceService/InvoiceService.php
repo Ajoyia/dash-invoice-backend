@@ -26,7 +26,7 @@ class InvoiceService
         $this->globalSettingsService = $globalSettingsService;
     }
 
-    public function listInvoices($request, $isAdmin)
+    public function listInvoices($request, bool $isAdmin)
     {
         return $this->invoiceListingService->listInvoices($request, $isAdmin);
     }
@@ -41,12 +41,12 @@ class InvoiceService
         return $this->invoiceManagementService->updateInvoice($id, $data);
     }
 
-    public function updateInvoiceStatus($request, $id)
+    public function updateInvoiceStatus($request, string $id)
     {
         return $this->invoiceManagementService->updateInvoiceStatus($request, $id);
     }
 
-    public function deleteInvoice($id)
+    public function deleteInvoice(string $id)
     {
         return $this->invoiceManagementService->deleteInvoice($id);
     }
@@ -61,7 +61,7 @@ class InvoiceService
         return $this->globalSettingsService->documentAssignmentSave($request);
     }
 
-    public function createCSV($invoices, $file_name, $type, $is_latest_exported_csv = false)
+    public function createCSV($invoices, string $file_name, string $type, bool $is_latest_exported_csv = false)
     {
         return $this->invoiceExportService->createCSV($invoices, $file_name, $type, $is_latest_exported_csv);
     }

@@ -68,14 +68,13 @@ class InvoiceRepository implements InvoiceRepositoryInterface
 				$this->createProducts($data['products'], $invoice);
 			}
 
-			return $invoice;
+			return $invoice->load(['company:id,company_name,company_number', 'products']);
 		});
 	}
 
 	public function updateInvoice(string $id, array $data): Invoice
 	{
 		return DB::transaction(function () use ($id, $data) {
-
 			$invoice = Invoice::findOrFail($id);
 			$invoice->update($data);
 
@@ -89,17 +88,14 @@ class InvoiceRepository implements InvoiceRepositoryInterface
 				$invoice->save();
 			}
 
-			return $invoice;
+			return $invoice->load(['company:id,company_name,company_number', 'products']);
 		});
 	}
 
-	private function createProducts($products, Invoice $invoice)
+	private function createProducts(array $products, Invoice $invoice): void
 	{
-		$productsArray = [];
-		foreach ($products as $product) {
-			$productsArray[] = [
-				// 'pos' => $product['pos'],
-				// 'article_number' => $product['articleNumber'],
+		$productsArray = array_map(function ($product) {
+			return [
 				'product_name' => $product['productName'],
 				'tax' => $product['tax'],
 				'quantity' => $product['quantity'],
@@ -107,9 +103,9 @@ class InvoiceRepository implements InvoiceRepositoryInterface
 				'total_credits' => $product['totalCredits'],
 				'credit_price' => $product['creditPrice'],
 				'product_price' => $product['nettoTotal'],
-				'netto_total' => $product['nettoTotal']
+				'netto_total' => $product['nettoTotal'],
 			];
-		}
+		}, $products);
 
 		$invoice->products()->createMany($productsArray);
 	}
