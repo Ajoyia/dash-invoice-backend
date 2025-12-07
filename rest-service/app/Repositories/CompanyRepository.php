@@ -7,7 +7,12 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-class CompanyRepository implements CompanyRepositoryInterface
+class CompanyRepository implements 
+    CompanyRepositoryInterface,
+    CompanyReadRepositoryInterface,
+    CompanyWriteRepositoryInterface,
+    CompanyQueryRepositoryInterface,
+    CompanyNumberGeneratorInterface
 {
     public function find(string $id): ?Company
     {
