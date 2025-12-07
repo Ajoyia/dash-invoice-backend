@@ -18,6 +18,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controllers\Middleware;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
@@ -70,7 +71,6 @@ class CompanyController extends Controller implements HasMiddleware
         return response()->json([
             'data' => $companies->items(),
             'totalInvoiceSum' => collect($companies->items())->sum('invoiceSum'),
-            'links' => $companies->links(),
             'current_page' => $companies->currentPage(),
             'from' => $companies->firstItem(),
             'last_page' => $companies->lastPage(),
@@ -122,7 +122,7 @@ class CompanyController extends Controller implements HasMiddleware
         }
     }
 
-    public function createReport(): JsonResponse
+    public function createReport(): StreamedResponse
     {
         $companies = $this->companyRepository->getAll();
         return $this->exportService->exportToCsv($companies, 'companies_report.csv');

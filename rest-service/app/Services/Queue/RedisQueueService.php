@@ -2,7 +2,7 @@
 
 namespace App\Services\Queue;
 
-use Redis;
+use Illuminate\Support\Facades\Redis;
 
 class RedisQueueService implements QueueServiceInterface
 {

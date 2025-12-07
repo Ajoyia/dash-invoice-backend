@@ -15,6 +15,7 @@ class CompanyDataTransformer
             'id' => $company->id,
             'companyNumber' => $company->company_number,
             'companyName' => $company->company_name,
+            'displayName' => $company->display_name,
             'addressLine1' => $company->address_line_1,
             'vatId' => $company->vat_id,
             'zipCode' => $company->zip_code,
@@ -38,6 +39,7 @@ class CompanyDataTransformer
         return [
             'id' => $company->id,
             'companyName' => $company->company_name,
+            'displayName' => $company->display_name,
             'vatId' => $company->vat_id,
             'addressLine1' => $company->address_line_1,
             'addressLine2' => $company->address_line_2,

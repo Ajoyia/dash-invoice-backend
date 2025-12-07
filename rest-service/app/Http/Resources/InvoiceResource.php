@@ -24,6 +24,7 @@ class InvoiceResource extends JsonResource
                 'id' => $this->company->id,
                 'companyNumber' => $this->company->company_number,
                 'companyName' => $this->company->company_name,
+                'displayName' => $this->company->display_name,
                 'vatId' => $this->company->vat_id,
                 'addressLine1' => $this->company->address_line_1,
                 'addressLine2' => $this->company->address_line_2,

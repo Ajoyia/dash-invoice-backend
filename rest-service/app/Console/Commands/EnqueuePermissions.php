@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Constants;
-use Redis;
+use Illuminate\Support\Facades\Redis;
 
 class EnqueuePermissions extends Command
 {

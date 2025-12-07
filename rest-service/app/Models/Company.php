@@ -24,4 +24,11 @@ class Company extends Model
 
     public $incrementing = false;
     protected $keyType = 'string';
+
+    protected $appends = ['display_name'];
+
+    public function getDisplayNameAttribute(): string
+    {
+        return ($this->company_number ?? '') . ' ' . ($this->company_name ?? '');
+    }
 }
