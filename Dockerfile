@@ -14,12 +14,10 @@ RUN apk add --no-cache \
     npm \
     autoconf \
     g++ \
-    make
+    make \
+    linux-headers
 
 RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring zip exif pcntl bcmath gd sockets
-
-RUN pecl install opentelemetry 2>/dev/null || true && \
-    (php -m | grep -q opentelemetry && docker-php-ext-enable opentelemetry || true)
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -27,7 +25,6 @@ WORKDIR /var/www/html
 
 COPY rest-service/composer.json rest-service/composer.lock ./
 RUN composer install --no-scripts --no-autoloader --prefer-dist \
-    --ignore-platform-req=ext-opentelemetry \
     --ignore-platform-req=php-64bit
 
 COPY rest-service/package.json rest-service/package-lock.json* ./
@@ -45,8 +42,7 @@ RUN chown -R www-data:www-data /var/www/html \
 
 FROM base AS development
 
-RUN composer install --prefer-dist \
-    --ignore-platform-req=ext-opentelemetry
+RUN composer install --prefer-dist
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
@@ -62,14 +58,9 @@ RUN apk add --no-cache \
     oniguruma \
     postgresql-libs \
     mysql-client \
-    autoconf \
-    g++ \
-    make
+    linux-headers
 
 RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring zip exif pcntl bcmath gd sockets
-
-RUN pecl install opentelemetry 2>/dev/null || true && \
-    (php -m | grep -q opentelemetry && docker-php-ext-enable opentelemetry || true)
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -78,7 +69,6 @@ WORKDIR /var/www/html
 COPY --from=base /var/www/html /var/www/html
 
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist \
-    --ignore-platform-req=ext-opentelemetry \
     && composer dump-autoload --optimize --classmap-authoritative --no-dev \
     && rm -rf /var/www/html/node_modules \
     && rm /usr/local/bin/composer
