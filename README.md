@@ -8,7 +8,30 @@ A Laravel-based REST API for managing companies and invoices with payment integr
 - Composer
 - MySQL/PostgreSQL
 - Redis
-## Installation
+
+## Quick Start with Docker (Recommended)
+
+The easiest way to run this project locally is using Docker:
+
+1. **Prerequisites**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+
+2. **Start the application**:
+   ```bash
+   docker-compose up -d --build
+   ```
+
+3. **Run initial setup**:
+   ```bash
+   docker-compose exec app php artisan key:generate
+   docker-compose exec app php artisan migrate
+   docker-compose exec app php artisan db:seed
+   ```
+
+4. **Access the application**: http://localhost:8000
+
+📖 **For detailed Docker setup instructions, see [DOCKER_SETUP.md](DOCKER_SETUP.md)**
+
+## Manual Installation (Without Docker)
 
 ### 1. Install Dependencies
 

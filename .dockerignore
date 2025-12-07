@@ -4,6 +4,7 @@ rest-service/.git
 rest-service/.gitignore
 rest-service/.env
 rest-service/.env.backup
+rest-service/.env.testing
 rest-service/.env.production
 rest-service/.phpunit.result.cache
 rest-service/storage/logs/*
