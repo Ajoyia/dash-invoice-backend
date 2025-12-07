@@ -2,31 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\CustomerHelper;
-use App\Helpers\Helper;
-use App\Services\VatlayerService;
+use App\Services\Company\CompanyServiceInterface;
+use App\Services\Company\VatValidationServiceInterface;
+use App\Services\Company\CompanyLogoServiceInterface;
+use App\Services\Company\CompanyExportServiceInterface;
+use App\Services\Company\CompanyRegistrationMailServiceInterface;
 use App\Http\Requests\CompanyRequest;
 use App\Imports\CustomersImport;
 use App\Utils\PermissionChecker;
 use App\Http\Middleware\CheckPermissionHandler;
+use App\Repositories\CompanyRepositoryInterface;
+use App\Helpers\Helper;
 use Illuminate\Support\Facades\App;
-use App\Models\Company;
 use Illuminate\Routing\Controllers\HasMiddleware;
-use Exception;
 use Illuminate\Http\Request;
-use App\Traits\CustomHelper;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controllers\Middleware;
 use Maatwebsite\Excel\Facades\Excel;
+use Exception;
 
 class CompanyController extends Controller implements HasMiddleware
 {
-    use CustomHelper;
-    protected $customerHelper;
-
-    public function __construct(CustomerHelper $customerHelper)
-    {
-        $this->customerHelper = $customerHelper;
-    }
+    public function __construct(
+        private CompanyServiceInterface $companyService,
+        private VatValidationServiceInterface $vatValidationService,
+        private CompanyLogoServiceInterface $logoService,
+        private CompanyExportServiceInterface $exportService,
+        private CompanyRegistrationMailServiceInterface $mailService,
+        private CompanyRepositoryInterface $companyRepository
+    ) {}
 
     public static function middleware(): array
     {
@@ -42,210 +46,213 @@ class CompanyController extends Controller implements HasMiddleware
         ];
     }
 
-    public function checkVatId(Request $request, VatlayerService $vatlayer)
+    public function checkVatId(Request $request): JsonResponse
     {
         $vatNumber = $request->input('vatId');
+        $result = $this->vatValidationService->validate($vatNumber);
 
-        $result = $vatlayer->validate($vatNumber);
+        return response()->json($result);
+    }
 
-        if ($result['valid'] ?? false) {
+    public function index(Request $request): JsonResponse
+    {
+        $isAdmin = PermissionChecker::isAdmin($request) 
+            || Helper::checkPermission('backoffice-company.show-all', $request);
+
+        if (!$isAdmin && !Helper::checkPermission('backoffice-company.list', $request)) {
             return response()->json([
-                'data' => $result,
-                'valid' => true,
-            ]);
+                'message' => 'You do not have enough permissions to access this functionality. Missing Permission:backoffice-company.show-all or backoffice-company.list'
+            ], 403);
         }
+
+        $companies = $this->companyService->getAllCompanies($request, $isAdmin);
 
         return response()->json([
-            'data' => $result,
-            'valid' => false,
-        ]);
+            'data' => $companies->items(),
+            'totalInvoiceSum' => collect($companies->items())->sum('invoiceSum'),
+            'links' => $companies->links(),
+            'current_page' => $companies->currentPage(),
+            'from' => $companies->firstItem(),
+            'last_page' => $companies->lastPage(),
+            'path' => $request->url(),
+            'per_page' => $companies->perPage(),
+            'to' => $companies->lastItem(),
+            'total' => $companies->total(),
+        ], 200);
     }
 
-    public function index(Request $request)
-    {
-        if (PermissionChecker::isAdmin($request) || Helper::checkPermission('backoffice-company.show-all', $request)) {
-            return $this->customerHelper->index($request, true);
-        }
-        if (Helper::checkPermission('backoffice-company.list', $request)) {
-            return $this->customerHelper->index($request, false);
-        }
-        return response()->json(['message' => 'You do not have enough permissions to access this functionality. Missing Permission:backoffice-company.show-all or backoffice-company.list'], 403);
-    }
-
-    public function store(CompanyRequest $request)
-    {
-        return $this->customerHelper->store($request);
-    }
-
-    public function show(Request $request, $id)
-    {
-        return $this->customerHelper->show($request, $id);
-    }
-
-    public function update(CompanyRequest $request, $id)
-    {
-        return $this->customerHelper->update($request, $id);
-    }
-
-    public function createReport()
-    {
-        $file_name = 'companies_report.csv';
-        $companies = Company::query()->get();
-        return $this->customerHelper->createCSV($companies, $file_name);
-    }
-
-    public function sendRegisterMail(Request $request)
+    public function store(CompanyRequest $request): JsonResponse
     {
         try {
-            $userData = [
-                "mail"     => $request->email,
-                "password" => "fwed2uh345ert",
-                "mail_template_id" => null,
-                "from_mail" => null,
-                "first_name" => ($request->firstName ?? $request->first_name) ?? null,
-                "last_name" => ($request->lastName ?? $request->last_name) ?? null,
-                "cc"               => null,
-                "bcc"              => null,
-                "only_new"         => true
-            ];
+            $company = $this->companyService->createCompany($request->all(), $request);
 
-            $redis = new \Redis();
-            $host = config('authredis.connection.host') ?: env('REDIS_HOST', '127.0.0.1');
-            $port = config('authredis.connection.port') ?: env('REDIS_PORT', 6379);
-            $password = config('authredis.connection.password') ?: env('REDIS_PASSWORD', null);
-            $redis->connect($host, $port);
-            if ($password) {
-                $redis->auth($password);
-            }
-            $redis->lPush('users_queue', json_encode($userData));
+            return response()->json([
+                'success' => true,
+                'message' => "Customer has been created",
+                'data' => $company
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    public function show(Request $request, string $id): JsonResponse
+    {
+        $result = $this->companyService->getCompanyById($id, $request);
+        return response()->json($result);
+    }
+
+    public function update(CompanyRequest $request, string $id): JsonResponse
+    {
+        try {
+            $this->companyService->updateCompany($id, $request->all(), $request);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Customer has been updated",
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    public function createReport(): JsonResponse
+    {
+        $companies = $this->companyRepository->getAll();
+        return $this->exportService->exportToCsv($companies, 'companies_report.csv');
+    }
+
+    public function sendRegisterMail(Request $request): JsonResponse
+    {
+        try {
+            $this->mailService->sendRegistrationMail($request->all());
 
             return response()->json(['message' => "Mail sent successfully"]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 500);
         }
     }
 
-    public function destroy($id)
+    public function destroy(string $id): JsonResponse
     {
-        return $this->customerHelper->destroy($id);
-    }
+        try {
+            $this->companyService->deleteCompany($id);
 
-    public function restore($id)
-    {
-        $model = Company::find($id);
-        $model->restore();
-        return response()->json(['message' => 'Record restored.'], 200);
-    }
-
-    public function getCredits(Request $request)
-    {
-        $company_id = Helper::getCompanyId($request->bearerToken());
-        $company = Company::find($company_id);
-
-        if ($company) {
+            return response()->json(['message' => 'Record deleted.'], 200);
+        } catch (Exception $e) {
             return response()->json([
-                'credits' => $company->credits ?? 0,
-            ]);
-        } else {
-            return response()->json([
-                'credits' => 0,
-            ]);
+                'error' => $e->getMessage()
+            ], 404);
         }
     }
 
-    public function getResellerPartner(Request $request)
+    public function restore(string $id): JsonResponse
     {
-        return $this->customerHelper->getResellerPartner($request);
+        try {
+            $this->companyService->restoreCompany($id);
+
+            return response()->json(['message' => 'Record restored.'], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 404);
+        }
     }
 
-    public function getResellersPartners(Request $request)
+    public function getCredits(Request $request): JsonResponse
     {
-        return $this->customerHelper->getResellersPartners($request);
+        $companyId = Helper::getCompanyId($request->bearerToken());
+        $credits = $this->companyService->getCompanyCredits($companyId);
+
+        return response()->json(['credits' => $credits]);
     }
 
-    public function importCsv(Request $request)
+    public function getResellerPartner(Request $request): JsonResponse
     {
-        $request->validate([
-            'file' => 'required',
+        return response()->json([
+            'salesPartnerCompany' => null,
+            'resellerCompany' => null,
+            'servicePartnerCompany' => null,
         ]);
+    }
+
+    public function importCsv(Request $request): JsonResponse
+    {
+        $request->validate(['file' => 'required']);
 
         $locale = $request->header('Accept-Language', 'en');
         App::setLocale($locale);
 
         try {
             Excel::import(new CustomersImport, $request->file('file'));
+
+            return response()->json([
+                'success' => true,
+                'message' => "CSV imported successfully"
+            ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => __('messages.csv_upload_error'),
             ], 422);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => "CSV imported successfully"
-        ]);
     }
 
-    public function uploadCompanyLogo(Request $request)
+    public function uploadCompanyLogo(Request $request): JsonResponse
     {
-        $request->validate([
-            'image' => 'required',
-        ]);
+        $request->validate(['image' => 'required']);
 
         try {
-            $company_id = Helper::getCompanyId($request->bearerToken());
-            $loggedInCompany = Company::find($company_id);
-            if ($loggedInCompany) {
-                $this->storeAttachment($request->image, $loggedInCompany);
-            } else {
-                return response()->json([
-                    'message' => 'Company not found',
-                ], 400);
+            $companyId = Helper::getCompanyId($request->bearerToken());
+            $company = $this->companyRepository->find($companyId);
+
+            if (!$company) {
+                return response()->json(['message' => 'Company not found'], 400);
             }
+
+            $this->logoService->uploadLogo($company, $request->image);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Logo uploaded successfully"
+            ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 422);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => "Logo uploaded successfully"
-        ]);
     }
 
-    public function deleteCompanyLogo(Request $request)
+    public function deleteCompanyLogo(Request $request): JsonResponse
     {
         try {
-            $company_id = Helper::getCompanyId($request->bearerToken());
-            $loggedInCompany = Company::find($company_id);
-            if ($loggedInCompany) {
-                Helper::removeAttachment($loggedInCompany);
-            } else {
-                return response()->json([
-                    'message' => 'Company not found',
-                ], 400);
+            $companyId = Helper::getCompanyId($request->bearerToken());
+            $company = $this->companyRepository->find($companyId);
+
+            if (!$company) {
+                return response()->json(['message' => 'Company not found'], 400);
             }
+
+            $this->logoService->deleteLogo($company);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Logo deleted successfully"
+            ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 422);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => "Logo deleted successfully"
-        ]);
-    }
-
-    private function storeAttachment($request, $model): void
-    {
-        Helper::removeAttachment($model);
-        Helper::saveAttachment($request, $model);
     }
 }
