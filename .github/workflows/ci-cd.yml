@@ -75,13 +75,29 @@ jobs:
           DB_PASSWORD: root
         run: php artisan migrate --force
 
+      - name: Create test database
+        working-directory: ./rest-service
+        run: |
+          php -r "try { \$pdo = new PDO('mysql:host=127.0.0.1;port=3306', 'root', 'root'); \$pdo->exec('CREATE DATABASE IF NOT EXISTS dash_invoice_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'); echo 'Test database created successfully'; } catch (PDOException \$e) { echo 'Error: ' . \$e->getMessage(); exit(1); }"
+
+      - name: Run test database migrations
+        working-directory: ./rest-service
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: dash_invoice_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan migrate --force
+
       - name: Run tests
         working-directory: ./rest-service
         env:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          DB_DATABASE: laravel
+          DB_DATABASE: dash_invoice_test
           DB_USERNAME: root
           DB_PASSWORD: root
           REDIS_HOST: 127.0.0.1
