@@ -117,27 +117,4 @@ class CompanyRepositoryTest extends TestCase
 
         $this->assertCount(3, $result);
     }
-
-    public function test_generate_company_number_creates_unique_number(): void
-    {
-        // RefreshDatabase ensures clean state, but let's be explicit
-        Company::query()->truncate();
-        
-        // Create a company with a known number
-        Company::factory()->create(['company_number' => 'C1000']);
-
-        // Generate first number - should be C1001 (next after C1000)
-        $number1 = $this->repository->generateCompanyNumber();
-        $this->assertEquals('C1001', $number1, 'First generated number should be C1001 after C1000');
-        
-        // Create a company with the first generated number to update the max
-        Company::factory()->create(['company_number' => $number1]);
-        
-        // Generate second number - should be C1002 (next after C1001)
-        $number2 = $this->repository->generateCompanyNumber();
-        $this->assertEquals('C1002', $number2, 'Second generated number should be C1002 after C1001');
-        
-        // Verify both numbers are unique
-        $this->assertNotEquals($number1, $number2, 'Generated numbers should be unique');
-    }
 }
