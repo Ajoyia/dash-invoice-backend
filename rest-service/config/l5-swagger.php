@@ -5,7 +5,7 @@ return [
     'documentations' => [
         'default' => [
             'api' => [
-                'title' => 'DentalTwin Documentation',
+                'title' => 'DashInvoice Documentation',
             ],
 
             'routes' => [

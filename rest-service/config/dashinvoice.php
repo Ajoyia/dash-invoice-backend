@@ -8,6 +8,5 @@ return [
     'STRIPE_SUCCESS_URL' => env('STRIPE_SUCCESS_URL'),
     'STRIPE_CANCEL_URL' => env('STRIPE_CANCEL_URL'),
     'STRIPE_WEBHOOK_SECRET' => env('STRIPE_WEBHOOK_SECRET', ''),
-    'AUTH_SERVICE_URL' => env('AUTH_SERVICE_URL', 'https://auth.dev.dentaltwin.com'),
-    'WHOLE_TEETH_AI_VERSION' => env('WHOLE_TEETH_AI_VERSION', '')
+    'AUTH_SERVICE_URL' => env('AUTH_SERVICE_URL', 'https://auth.dev.dashinvoice.com'),
 ];

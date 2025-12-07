@@ -141,7 +141,7 @@ class CustomerHelper
                 $company->address_line_2 = $request->addressLine2;
                 $company->city = $request->city;
                 $company->status = $request->status;
-                if (PermissionChecker::isAdmin($request) || Helper::checkPermission('backoffice-dentaltwin-coins.edit', $request))
+                if (PermissionChecker::isAdmin($request) || Helper::checkPermission('backoffice-companies-coins.edit', $request))
                     $company->credits = $request->credits;
                 $company->country = $request->country;
                 $company->zip_code = $request->zipCode;
@@ -308,7 +308,7 @@ class CustomerHelper
                 if (isset($request->invoiceEmailAddress)) {
                     $company->invoice_email = $request->invoiceEmailAddress;
                 }
-                if ((PermissionChecker::isAdmin($request) || Helper::checkPermission('backoffice-dentaltwin-coins.edit', $request))
+                if ((PermissionChecker::isAdmin($request) || Helper::checkPermission('backoffice-companies-coins.edit', $request))
                     &&
                     isset($request->credits)
                 ) {

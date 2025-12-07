@@ -29,8 +29,6 @@ Edit `.env` file and update:
 
 - Database credentials (`DB_*`)
 - Redis credentials (`REDIS_*`)
-- Strip+
-e keys (`STRIPE_*`)
 - JWT key (`JWT_KEY`)
 - Other service configurations
 
@@ -108,7 +106,6 @@ http://localhost:8000/api/documentation
 - Company management (CRUD operations)
 - Invoice management with products
 - CSV import/export functionality
-- Stripe payment integration
 - VAT ID validation
 - Mail template assignments
 - Global settings management

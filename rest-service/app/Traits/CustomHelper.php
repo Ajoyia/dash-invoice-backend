@@ -108,7 +108,7 @@ trait CustomHelper
         
         if ($user_ids) {
             $token = $request->bearerToken();
-            $url = config('dentaltwin.AUTH_SERVICE_URL');
+            $url = config('dashinvoice.AUTH_SERVICE_URL');
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
