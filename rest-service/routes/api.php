@@ -2,15 +2,10 @@
 
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\InvoiceReminderLevelController;
-use App\Http\Controllers\StripeController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/stripe-webhook', [StripeController::class, 'stripeWebhookNew']);
 
 Route::post('/check-vat-id', [CompanyController::class, 'checkVatId']);
-Route::get('get-partner-companies', [CompanyController::class, 'getResellersPartners']);
-Route::post('register-company', [CompanyController::class, 'storeReferral']);
 
 Route::get('/captcha/api', function () {
     return response()->json([
@@ -46,21 +41,5 @@ Route::middleware(['user.permissions'])->group(function () {
     Route::get('/companies/download/csv', [CompanyController::class, 'createReport']);
     Route::post('save-company-owners', [CompanyController::class, 'saveCompanyOwners']);
 
-    Route::apiResource('invoice-reminder-level', InvoiceReminderLevelController::class);
+   });
 
-    Route::get('/stripe/products', [StripeController::class, 'products']);
-    Route::post('/stripe/subscription-checkout', [StripeController::class, 'stripeSubscriptionCheckout']);
-    Route::post('/stripe/direct-checkout', [StripeController::class, 'stripeDirectCheckout']);
-    Route::post('/stripe/checkout/payment-method', [StripeController::class, 'stripeCheckoutPaymentMethod']);
-    Route::post('/stripe/session', [StripeController::class, 'getSessionDetailNew']);
-    Route::get('/stripe/company-subscription', [StripeController::class, 'getCompanySubscription']);
-    Route::get('/stripe/cancel-subscription', [StripeController::class, 'cancelSubscription']);
-    Route::get('/stripe/payment-method', [StripeController::class, 'companyPaymentMethod']);
-    Route::get('/stripe/customer/default-payment-method/{id}', [StripeController::class, 'setDefaultPaymentMethod']);
-    Route::post('/stripe/upgrade-plan', [StripeController::class, 'upgradePlan']);
-    Route::get('/stripe/revert-upgrade-plan', [StripeController::class, 'revertUpgradePlan']);
-    Route::post('/stripe/pause-subscription', [StripeController::class, 'pauseSubscription']);
-    Route::get('/stripe/resume-subscription', [StripeController::class, 'resumeSubscription']);
-});
-
-Route::post('/stripe/webhook', [StripeController::class, 'stripeWebhookNew']);
