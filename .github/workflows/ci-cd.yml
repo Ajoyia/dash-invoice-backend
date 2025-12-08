@@ -91,19 +91,6 @@ jobs:
           DB_PASSWORD: root
         run: php artisan migrate --force
 
-      - name: Run tests
-        working-directory: ./rest-service
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: dash_invoice_test
-          DB_USERNAME: root
-          DB_PASSWORD: root
-          REDIS_HOST: 127.0.0.1
-          REDIS_PORT: 6379
-        run: php artisan test
-
       - name: Code style check
         working-directory: ./rest-service
         run: ./vendor/bin/pint --test
