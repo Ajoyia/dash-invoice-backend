@@ -33,5 +33,4 @@ trait CompanyRelations
     {
         return $this->hasMany(\App\Models\CompanyBankDetail::class, 'company_id');
     }
-
 }

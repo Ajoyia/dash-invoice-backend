@@ -3,19 +3,18 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::create('invoices', function (Blueprint $table) {
-            $table->string("id")->primary();
+            $table->string('id')->primary();
             $table->string('invoice_number')->nullable();
             $table->string('company_id')->references('id')->on('companies')->onDelete('cascade')->nullable();
             $table->string('reference_invoice_id')->references('id')->on('invoices')->onDelete('cascade')->nullable();
-            $table->enum("invoice_type", ["invoice-correction", "invoice", "invoice-storno"])->default("invoice")->nullable();
-            $table->enum("status", ["draft", "approved", "sent", "warning level 1", "warning level 2", "warning level 3", "paid"])->default("draft")->nullable();
+            $table->enum('invoice_type', ['invoice-correction', 'invoice', 'invoice-storno'])->default('invoice')->nullable();
+            $table->enum('status', ['draft', 'approved', 'sent', 'warning level 1', 'warning level 2', 'warning level 3', 'paid'])->default('draft')->nullable();
             $table->date('due_date')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
@@ -49,4 +48,3 @@ return new class extends Migration
         Schema::dropIfExists('invoices');
     }
 };
-

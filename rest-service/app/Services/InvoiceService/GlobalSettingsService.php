@@ -23,7 +23,7 @@ class GlobalSettingsService implements GlobalSettingsServiceInterface
             ->toArray();
 
         return response()->json([
-            'data' => $settings
+            'data' => $settings,
         ]);
     }
 
@@ -59,7 +59,7 @@ class GlobalSettingsService implements GlobalSettingsServiceInterface
 
         return response()->json([
             'success' => true,
-            'message' => 'Record Saved.'
+            'message' => 'Record Saved.',
         ]);
     }
 }

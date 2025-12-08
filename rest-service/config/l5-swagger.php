@@ -51,7 +51,7 @@ return [
                 ],
 
             ],
-            
+
         ],
     ],
     'defaults' => [
@@ -190,7 +190,7 @@ return [
                     'description' => 'Bearer token for API authentication',
                     'name' => 'Authorization',
                     'in' => 'header',
-                    'tokenUrl' => '/auth/token'
+                    'tokenUrl' => '/auth/token',
                 ],
                 /* Open API 3.0 support
                 'passport' => [ // Unique name of security
@@ -220,7 +220,7 @@ return [
                  * Examples of Securities
                 */
                 [
-                    'bearerAuth' => []
+                    'bearerAuth' => [],
                     /*
                     'oauth2_security_example' => [
                         'read',

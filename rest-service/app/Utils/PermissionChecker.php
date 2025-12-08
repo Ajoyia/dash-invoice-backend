@@ -10,9 +10,10 @@ class PermissionChecker
     {
         $roles = $request->get('auth_user_roles');
 
-        if (in_array("admin", $roles)) {
+        if (in_array('admin', $roles)) {
             return true;
         }
+
         return false;
     }
 }

@@ -2,20 +2,16 @@
 
 namespace App\Traits;
 
-use App\Models\CaseLog;
-use App\Models\Ticket;
-use App\Models\TicketComment;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
-use NumberFormatter;
 use App\Models\MailTemplateAssignment;
 use DateTime;
-use Illuminate\Support\Facades\Http;
 use Exception;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use NumberFormatter;
 
 trait CustomHelper
 {
-
     public function applySortingBeforePagination($query, string $sortBy, string $sortOrder)
     {
         $sortByParts = explode('.', $sortBy);
@@ -24,10 +20,11 @@ trait CustomHelper
             // Handle nested relationship sorting
             $nestedColumn = Str::snake(array_pop($sortByParts));
             $nestedRelationship = implode('.', $sortByParts);
-            $relatedModel = "App\Models\\" . Str::studly($nestedRelationship);
+            $relatedModel = "App\Models\\".Str::studly($nestedRelationship);
 
             $modelInstance = app($relatedModel);
             $foreignKeyName = $query->getModel()->{$nestedRelationship}()->getForeignKeyName();
+
             return $query->leftJoin(
                 $modelInstance->getTable(),
                 "{$query->getModel()->getTable()}.{$foreignKeyName}",
@@ -55,11 +52,11 @@ trait CustomHelper
             [$firstRelation, $secondRelation, $nestedColumn] = [
                 $sortByUnderscore[0],
                 $sortByUnderscore[1],
-                Str::snake($sortByUnderscore[2])
+                Str::snake($sortByUnderscore[2]),
             ];
 
-            $firstModel = "App\Models\\" . Str::studly($firstRelation);
-            $secondModel = "App\Models\\" . Str::studly($secondRelation);
+            $firstModel = "App\Models\\".Str::studly($firstRelation);
+            $secondModel = "App\Models\\".Str::studly($secondRelation);
 
             $firstInstance = app($firstModel);
             $secondInstance = app($secondModel);
@@ -89,8 +86,9 @@ trait CustomHelper
 
         // Simple column sorting
         $columnName = Str::snake($sortByParts[0]);
+
         return str_contains($columnName, '_numeric')
-            ? $query->orderByRaw("CAST(" . str_replace('_numeric', '', $columnName) . " AS SIGNED) {$sortOrder}")
+            ? $query->orderByRaw('CAST('.str_replace('_numeric', '', $columnName)." AS SIGNED) {$sortOrder}")
             : $query->orderBy($columnName, $sortOrder);
     }
 
@@ -99,20 +97,21 @@ trait CustomHelper
         $collection = $collection->mapWithKeys(function ($value, $key) {
             return [Str::snake($key) => $value];
         })->toArray();
+
         return $collection;
     }
 
     public function sendMail($request, $data, $user_ids, $module, $notification_mail = null, $isSendNotificationMail = false)
     {
         $mails = [];
-        
+
         if ($user_ids) {
             $token = $request->bearerToken();
             $url = config('dashinvoice.AUTH_SERVICE_URL');
 
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-            ])->get($url . '/list-user-by-id?' . http_build_query(['id' => $user_ids->toArray()]));
+                'Authorization' => 'Bearer '.$token,
+            ])->get($url.'/list-user-by-id?'.http_build_query(['id' => $user_ids->toArray()]));
 
             $response = $response->json();
             $users = collect($response ?? []);
@@ -123,20 +122,19 @@ trait CustomHelper
         $from_mail = $mailTemplate->sender_mail ?? null;
 
         if ($isSendNotificationMail) {
-            if (!empty($notification_mail)) {
+            if (! empty($notification_mail)) {
                 $mails[] = $notification_mail;
                 $mails = array_unique($mails);
             }
         }
 
         $arr = [
-            "id" => $mailTemplate->mail_template_id ?? null,
-            "data" => $data,
-            "cc" => $mailTemplate->cc ?? null,
-            "bcc" => $mailTemplate->bcc ?? null,
-            "mails" => $mails,
+            'id' => $mailTemplate->mail_template_id ?? null,
+            'data' => $data,
+            'cc' => $mailTemplate->cc ?? null,
+            'bcc' => $mailTemplate->bcc ?? null,
+            'mails' => $mails,
         ];
-
 
         // Validate 'cc' if provided. If it's a string, split it by whitespace, commas, or semicolons.
         if (isset($arr['cc'])) {
@@ -153,7 +151,7 @@ trait CustomHelper
         }
 
         // Manually create a Redis instance using configuration.
-        $redis = new \Redis();
+        $redis = new \Redis;
         // You can use configuration values or environment variables.
         $host = config('authredis.connection.host') ?: env('REDIS_HOST', '127.0.0.1');
         $port = config('authredis.connection.port') ?: env('REDIS_PORT', 6379);
@@ -162,7 +160,7 @@ trait CustomHelper
         if ($password) {
             $redis->auth($password);
         }
-        $redis->lPush($from_mail . '_mail_queue', json_encode($arr));
+        $redis->lPush($from_mail.'_mail_queue', json_encode($arr));
     }
 
     public function formatNumber(
@@ -179,7 +177,7 @@ trait CustomHelper
         ];
 
         // Ensure locale fallback works properly
-        $locale = isset($languages[$language]) ? $language . '-' . $languages[$language] : 'en-GB';
+        $locale = isset($languages[$language]) ? $language.'-'.$languages[$language] : 'en-GB';
 
         $formattedNumber = $number;
 
@@ -189,7 +187,7 @@ trait CustomHelper
             $formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $minimumFractionDigits);
             $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $maximumFractionDigits);
 
-            if (!$simpleNumber) {
+            if (! $simpleNumber) {
                 $formatter->setTextAttribute(NumberFormatter::CURRENCY_CODE, $currency);
             }
 
@@ -200,7 +198,7 @@ trait CustomHelper
         }
     }
 
-    function formatDate($date, $language = 'en')
+    public function formatDate($date, $language = 'en')
     {
         try {
             // Convert the date string to a DateTime object
@@ -212,7 +210,7 @@ trait CustomHelper
 
             // Return formatted date with or without time
             return strpos($date, ':') !== false
-                ? $dateString . ' ' . $timeString
+                ? $dateString.' '.$timeString
                 : $dateString;
         } catch (Exception $e) {
             return '';

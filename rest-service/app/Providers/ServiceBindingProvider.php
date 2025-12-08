@@ -2,18 +2,18 @@
 
 namespace App\Providers;
 
-use App\Repositories\CompanyRepositoryInterface;
 use App\Repositories\CompanyRepository;
-use App\Services\Company\CompanyServiceInterface;
-use App\Services\Company\CompanyService;
-use App\Services\Company\VatValidationServiceInterface;
-use App\Services\Company\VatValidationService;
-use App\Services\Company\CompanyLogoServiceInterface;
-use App\Services\Company\CompanyLogoService;
-use App\Services\Company\CompanyExportServiceInterface;
+use App\Repositories\CompanyRepositoryInterface;
 use App\Services\Company\CompanyExportService;
-use App\Services\Company\CompanyRegistrationMailServiceInterface;
+use App\Services\Company\CompanyExportServiceInterface;
+use App\Services\Company\CompanyLogoService;
+use App\Services\Company\CompanyLogoServiceInterface;
 use App\Services\Company\CompanyRegistrationMailService;
+use App\Services\Company\CompanyRegistrationMailServiceInterface;
+use App\Services\Company\CompanyService;
+use App\Services\Company\CompanyServiceInterface;
+use App\Services\Company\VatValidationService;
+use App\Services\Company\VatValidationServiceInterface;
 use App\Services\Queue\QueueServiceInterface;
 use App\Services\Queue\RedisQueueService;
 use Illuminate\Support\ServiceProvider;
@@ -31,7 +31,5 @@ class ServiceBindingProvider extends ServiceProvider
         $this->app->bind(QueueServiceInterface::class, RedisQueueService::class);
     }
 
-    public function boot(): void
-    {
-    }
+    public function boot(): void {}
 }

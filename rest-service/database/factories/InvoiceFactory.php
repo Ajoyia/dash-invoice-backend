@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Invoice;
 use App\Models\Company;
+use App\Models\Invoice;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class InvoiceFactory extends Factory
@@ -63,6 +63,3 @@ class InvoiceFactory extends Factory
         ]);
     }
 }
-
-
-

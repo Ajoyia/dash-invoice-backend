@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Constants;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Redis;
 
 class EnqueuePermissions extends Command
@@ -73,7 +73,7 @@ class EnqueuePermissions extends Command
     {
 
         // Initialize Redis
-        $this->redis = new Redis();
+        $this->redis = new Redis;
 
         $attempt = 0;
 
@@ -90,19 +90,19 @@ class EnqueuePermissions extends Command
                 );
 
                 // Authenticate if password is provided
-                if (!empty($this->config['password'])) {
+                if (! empty($this->config['password'])) {
                     $this->redis->auth($this->config['password']);
                 }
 
                 // Optionally set persistent connection
-                if (!empty($this->config['persistent']) && $this->config['persistent']) {
+                if (! empty($this->config['persistent']) && $this->config['persistent']) {
                     $this->redis->pconnect(
                         $this->config['host'],
                         $this->config['port'],
                         $this->config['timeout']
                     );
 
-                    if (!empty($this->config['password'])) {
+                    if (! empty($this->config['password'])) {
                         $this->redis->auth($this->config['password']);
                     }
                 }
@@ -111,7 +111,7 @@ class EnqueuePermissions extends Command
                 break; // Exit the loop on successful connection
 
             } catch (\Exception $e) {
-                echo "Failed to connect to Redis: " . $e->getMessage() . "\n";
+                echo 'Failed to connect to Redis: '.$e->getMessage()."\n";
 
                 if ($this->maxRetries !== null && $attempt >= $this->maxRetries) {
                     echo "Reached maximum number of retries ({$this->maxRetries}). Exiting.\n";
@@ -122,7 +122,7 @@ class EnqueuePermissions extends Command
                 sleep($this->retrySleepSeconds);
             }
         }
-        
+
         echo "Starting to enqueue permissions.\n";
 
         try {
@@ -147,7 +147,8 @@ class EnqueuePermissions extends Command
             echo "All permissions have been enqueued successfully.\n";
 
         } catch (\Exception $e) {
-            echo "Failed to enqueue permissions: " . $e->getMessage() . "\n";
+            echo 'Failed to enqueue permissions: '.$e->getMessage()."\n";
+
             return 1; // Non-zero exit code indicates failure
         }
 

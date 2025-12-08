@@ -5,34 +5,32 @@ namespace App\Helpers;
 use App\Models\UploadedFile;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class Helper
 {
-
     public static function getCompanyId($token)
     {
         $tokenResponse = (array) JWT::decode($token, new Key(
             config('session.JWT_KEY'),
             'HS256'
         ));
+
         return $tokenResponse['company_id'];
     }
 
     public static function isForeignKey($table, $column)
     {
         $schemaName = config('database.connections.mysql.database'); // Database name
-        $foreignKeys = DB::select("
+        $foreignKeys = DB::select('
                     SELECT CONSTRAINT_NAME
                     FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
                     WHERE TABLE_SCHEMA = ?
                     AND TABLE_NAME = ?
                     AND COLUMN_NAME = ?
-                    AND REFERENCED_COLUMN_NAME IS NOT NULL", [$schemaName, $table, $column]);
+                    AND REFERENCED_COLUMN_NAME IS NOT NULL', [$schemaName, $table, $column]);
 
-        return !empty($foreignKeys);
+        return ! empty($foreignKeys);
     }
 
     public static function checkPermission($permission, $request)
@@ -41,6 +39,7 @@ class Helper
         if (in_array($permission, $userPermissions)) {
             return true;
         }
+
         return false;
     }
 
@@ -53,13 +52,12 @@ class Helper
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $string))));
     }
 
-
     public static function saveAttachment($file, $model, $type = null)
     {
         $originalName = $file['name'];
         $extension = $file['extension'];
         $id = $file['id'];
-       $uploaded_file = new UploadedFile();
+        $uploaded_file = new UploadedFile;
         if ($type) {
             $uploaded_file->type = $type;
         }
@@ -73,9 +71,10 @@ class Helper
     public static function removeAttachment($model, $type = null)
     {
         $uploadedFile = UploadedFile::where('fileable_id', $model->id)->where('fileable_type', get_class($model))
-            ->when($type, fn($q) => $q->where('type', $type))->first();
+            ->when($type, fn ($q) => $q->where('type', $type))->first();
 
-        if ($uploadedFile)
+        if ($uploadedFile) {
             $uploadedFile->delete();
+        }
     }
 }

@@ -4,16 +4,15 @@ namespace App\Imports;
 
 use App\Models\Company;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 class CustomersImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
         $existingCompany = Company::where('company_name', $row['company_name'])->first();
-        if (!$existingCompany) {
+        if (! $existingCompany) {
             $companyData = [
                 'company_name' => $row['company_name'],
                 'vat_id' => $row['vat_id'],
@@ -33,8 +32,8 @@ class CustomersImport implements ToModel, WithHeadingRow
             $company = new Company($companyData);
             $company->save();
 
-            $companyNumber = DB::table('companies')->max(DB::raw("CAST(SUBSTRING(company_number, 2) AS UNSIGNED)")) ?? 1000;
-            $company->company_number = 'C' . ($companyNumber + 1);
+            $companyNumber = DB::table('companies')->max(DB::raw('CAST(SUBSTRING(company_number, 2) AS UNSIGNED)')) ?? 1000;
+            $company->company_number = 'C'.($companyNumber + 1);
             $company->save();
         }
     }

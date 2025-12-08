@@ -2,15 +2,14 @@
 
 namespace App\Services\Company;
 
+use App\Helpers\Helper;
 use App\Models\Company;
 use App\Repositories\CompanyRepositoryInterface;
-use App\Services\Company\CompanyDataTransformer;
 use App\Utils\PermissionChecker;
-use App\Helpers\Helper;
+use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 class CompanyService implements CompanyServiceInterface
 {
@@ -44,12 +43,12 @@ class CompanyService implements CompanyServiceInterface
     {
         $company = $this->repository->find($id);
 
-        if (!$company) {
+        if (! $company) {
             return ['modelData' => []];
         }
 
         return [
-            'modelData' => $this->transformer->transformForDetail($company)
+            'modelData' => $this->transformer->transformForDetail($company),
         ];
     }
 
@@ -59,7 +58,7 @@ class CompanyService implements CompanyServiceInterface
             $companyData = $this->prepareCompanyData($data, $request);
             $company = $this->repository->create($companyData);
 
-            if (!empty($data['bankDetails'])) {
+            if (! empty($data['bankDetails'])) {
                 $this->createBankDetails($company, $data['bankDetails']);
             }
 
@@ -75,7 +74,7 @@ class CompanyService implements CompanyServiceInterface
             $companyData = $this->prepareUpdateData($data, $request);
             $this->repository->update($company, $companyData);
 
-            if (!empty($data['bankDetails'])) {
+            if (! empty($data['bankDetails'])) {
                 $this->updateBankDetails($company, $data['bankDetails']);
             }
 
@@ -86,14 +85,15 @@ class CompanyService implements CompanyServiceInterface
     public function deleteCompany(string $id): bool
     {
         $company = $this->repository->findOrFail($id);
+
         return $this->repository->delete($company);
     }
 
     public function restoreCompany(string $id): bool
     {
         $company = $this->repository->find($id);
-        
-        if (!$company) {
+
+        if (! $company) {
             throw new Exception('Company not found');
         }
 
@@ -103,6 +103,7 @@ class CompanyService implements CompanyServiceInterface
     public function getCompanyCredits(string $companyId): float
     {
         $company = $this->repository->find($companyId);
+
         return $company?->credits ?? 0.0;
     }
 
@@ -204,7 +205,7 @@ class CompanyService implements CompanyServiceInterface
 
     private function canEditCredits(Request $request): bool
     {
-        return PermissionChecker::isAdmin($request) 
+        return PermissionChecker::isAdmin($request)
             || Helper::checkPermission('backoffice-companies-coins.edit', $request);
     }
 }

@@ -4,7 +4,6 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Route;
 
-
 Route::post('/check-vat-id', [CompanyController::class, 'checkVatId']);
 
 Route::get('/captcha/api', function () {
@@ -41,5 +40,4 @@ Route::middleware(['user.permissions'])->group(function () {
     Route::get('/companies/download/csv', [CompanyController::class, 'createReport']);
     Route::post('save-company-owners', [CompanyController::class, 'saveCompanyOwners']);
 
-   });
-
+});

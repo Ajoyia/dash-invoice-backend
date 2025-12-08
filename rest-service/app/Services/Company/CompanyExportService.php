@@ -21,15 +21,15 @@ class CompanyExportService implements CompanyExportServiceInterface
         ];
 
         $columnMap = [
-            'Company Number' => fn(Company $company) => $company->company_number ?? '',
-            'Company Name' => fn(Company $company) => $company->company_name,
-            'Creation Date' => fn(Company $company) => $this->formatDate($company->created_at, 'de', 'EUR'),
-            'Status' => fn(Company $company) => $company->status,
+            'Company Number' => fn (Company $company) => $company->company_number ?? '',
+            'Company Name' => fn (Company $company) => $company->company_name,
+            'Creation Date' => fn (Company $company) => $this->formatDate($company->created_at, 'de', 'EUR'),
+            'Status' => fn (Company $company) => $company->status,
         ];
 
         $callback = function () use ($companies, $columns, $columnMap) {
             $file = fopen('php://output', 'w');
-            fputs($file, "\xEF\xBB\xBF");
+            fwrite($file, "\xEF\xBB\xBF");
             fputcsv($file, $columns);
 
             foreach ($companies as $company) {
@@ -45,7 +45,7 @@ class CompanyExportService implements CompanyExportServiceInterface
 
         return response()->streamDownload($callback, $fileName, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"$fileName\""
+            'Content-Disposition' => "attachment; filename=\"$fileName\"",
         ]);
     }
 }

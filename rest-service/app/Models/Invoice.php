@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\InvoiceScopes;
-use App\Models\Concerns\InvoiceRelations;
 use App\Models\Concerns\HasUuid;
+use App\Models\Concerns\InvoiceRelations;
+use App\Models\Concerns\InvoiceScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Invoice extends Model
 {
-    use HasFactory, InvoiceScopes, InvoiceRelations, HasUuid;
+    use HasFactory, HasUuid, InvoiceRelations, InvoiceScopes;
 
     protected $guarded = [
         'id',
@@ -19,5 +19,6 @@ class Invoice extends Model
     ];
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 }

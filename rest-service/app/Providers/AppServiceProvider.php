@@ -13,7 +13,5 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(InvoiceRepositoryInterface::class, InvoiceRepository::class);
     }
 
-    public function boot(): void
-    {
-    }
+    public function boot(): void {}
 }

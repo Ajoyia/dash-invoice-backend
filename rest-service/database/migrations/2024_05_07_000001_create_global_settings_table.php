@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('global_settings', function (Blueprint $table) {
-            $table->string("id")->primary();
+            $table->string('id')->primary();
             $table->string('key');
             $table->text('value');
             $table->integer('year')->nullable();
@@ -25,4 +25,3 @@ return new class extends Migration
         Schema::dropIfExists('global_settings');
     }
 };
-

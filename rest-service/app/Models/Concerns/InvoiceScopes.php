@@ -11,7 +11,7 @@ trait InvoiceScopes
     {
         return $query->when($filters['search'] ?? null, function ($query, $search) {
             $likeOperator = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
-            $query->where('invoice_number', $likeOperator, '%' . $search . '%');
+            $query->where('invoice_number', $likeOperator, '%'.$search.'%');
         });
     }
 }

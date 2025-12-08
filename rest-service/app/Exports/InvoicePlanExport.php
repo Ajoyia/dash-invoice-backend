@@ -11,17 +11,21 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class InvoicePlanExport implements FromArray, WithHeadings, WithCustomStartCell, WithEvents
+class InvoicePlanExport implements FromArray, WithCustomStartCell, WithEvents, WithHeadings
 {
     private const COLUMNS_PER_MONTH = 3;
+
     private const MONTHS = [
         'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
+        'July', 'August', 'September', 'October', 'November', 'December',
     ];
 
     protected $companyId;
+
     protected $isAdmin;
+
     protected $currentYear;
+
     protected $currentMonth;
 
     public function __construct($companyId, $isAdmin)
@@ -45,7 +49,7 @@ class InvoicePlanExport implements FromArray, WithHeadings, WithCustomStartCell,
             ->where('status', '!=', 'draft')
             ->whereYear('created_at', $this->currentYear);
 
-        if (!$this->isAdmin) {
+        if (! $this->isAdmin) {
             $query->where('company_id', $this->companyId);
         }
 
@@ -141,12 +145,14 @@ class InvoicePlanExport implements FromArray, WithHeadings, WithCustomStartCell,
     {
         $startCol = $this->numberToColumn($columnIndex);
         $endCol = $this->numberToColumn($columnIndex + self::COLUMNS_PER_MONTH - 1);
+
         return "{$startCol}1:{$endCol}1";
     }
 
     private function getCenterCell(int $columnIndex): string
     {
         $centerCol = $this->numberToColumn($columnIndex + 1);
+
         return "{$centerCol}1";
     }
 
@@ -155,9 +161,10 @@ class InvoicePlanExport implements FromArray, WithHeadings, WithCustomStartCell,
         $column = '';
         while ($number > 0) {
             $number--;
-            $column = chr(65 + ($number % 26)) . $column;
+            $column = chr(65 + ($number % 26)).$column;
             $number = intval($number / 26);
         }
+
         return $column;
     }
 

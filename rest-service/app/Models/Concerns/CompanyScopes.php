@@ -13,11 +13,11 @@ trait CompanyScopes
             $likeOperator = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
 
             $query->where(function ($q) use ($search, $likeOperator) {
-                $q->where('company_name', $likeOperator, '%' . $search . '%')
-                    ->orWhere('company_number', $likeOperator, '%' . $search . '%')
-                    ->orWhere('city', $likeOperator, '%' . $search . '%')
-                    ->orWhere('country', $likeOperator, '%' . $search . '%')
-                    ->orWhere('vat_id', $likeOperator, '%' . $search . '%');
+                $q->where('company_name', $likeOperator, '%'.$search.'%')
+                    ->orWhere('company_number', $likeOperator, '%'.$search.'%')
+                    ->orWhere('city', $likeOperator, '%'.$search.'%')
+                    ->orWhere('country', $likeOperator, '%'.$search.'%')
+                    ->orWhere('vat_id', $likeOperator, '%'.$search.'%');
             });
         })->when($filters['status'] ?? null, function ($query, $status) {
             $query->where('status', $status);

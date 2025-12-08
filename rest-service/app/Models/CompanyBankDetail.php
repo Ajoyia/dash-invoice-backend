@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class CompanyBankDetail extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
-    use HasFactory;
 
+    use HasFactory;
 }

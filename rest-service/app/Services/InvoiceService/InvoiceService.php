@@ -2,16 +2,19 @@
 
 namespace App\Services\InvoiceService;
 
+use App\Services\InvoiceService\Interfaces\GlobalSettingsServiceInterface;
+use App\Services\InvoiceService\Interfaces\InvoiceExportServiceInterface;
 use App\Services\InvoiceService\Interfaces\InvoiceListingServiceInterface;
 use App\Services\InvoiceService\Interfaces\InvoiceManagementServiceInterface;
-use App\Services\InvoiceService\Interfaces\InvoiceExportServiceInterface;
-use App\Services\InvoiceService\Interfaces\GlobalSettingsServiceInterface;
 
 class InvoiceService
 {
     protected $invoiceListingService;
+
     protected $invoiceManagementService;
+
     protected $invoiceExportService;
+
     protected $globalSettingsService;
 
     public function __construct(

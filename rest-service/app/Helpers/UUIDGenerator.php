@@ -1,11 +1,11 @@
 <?php
 
-
 namespace App\Helpers;
 
 class UUIDGenerator
 {
     private static $counter = 0;
+
     /**
      * Generates a UUID that embeds the current Unix time in milliseconds.
      *
@@ -23,16 +23,16 @@ class UUIDGenerator
     private static function _generateUUID()
     {
         // 1. Get the current Unix time in milliseconds.
-        $unix_ms = (int)(microtime(true) * 1000);
+        $unix_ms = (int) (microtime(true) * 1000);
 
         // 2. Convert milliseconds to 100‑ns intervals and add the offset.
         // There are 10,000 100‑ns intervals in one millisecond.
         $uuid_timestamp = ($unix_ms);
 
         // 3. Split the 60‑bit timestamp into its three parts.
-        $time_low  = $uuid_timestamp & 0xffff;
-        $time_mid  = ($uuid_timestamp>>16) & 0xffff;
-        $time_hi  = ($uuid_timestamp >> 32) & 0xffffffff;
+        $time_low = $uuid_timestamp & 0xFFFF;
+        $time_mid = ($uuid_timestamp >> 16) & 0xFFFF;
+        $time_hi = ($uuid_timestamp >> 32) & 0xFFFFFFFF;
 
         self::$counter++;
         self::$counter = self::$counter % 65536;
@@ -47,7 +47,6 @@ class UUIDGenerator
         // 6. Assemble the UUID in the standard 8-4-4-4-12 format.
         $uuid = sprintf(
             '%08x-%04x-%04x-%04x-%012s',
-
 
             $time_hi,         // 8 hex digits (includes version)
             $time_mid,                // 4 hex digits

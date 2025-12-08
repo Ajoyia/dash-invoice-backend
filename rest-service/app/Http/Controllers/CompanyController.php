@@ -2,25 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Company\CompanyServiceInterface;
-use App\Services\Company\VatValidationServiceInterface;
-use App\Services\Company\CompanyLogoServiceInterface;
-use App\Services\Company\CompanyExportServiceInterface;
-use App\Services\Company\CompanyRegistrationMailServiceInterface;
+use App\Helpers\Helper;
+use App\Http\Middleware\CheckPermissionHandler;
 use App\Http\Requests\CompanyRequest;
 use App\Imports\CustomersImport;
-use App\Utils\PermissionChecker;
-use App\Http\Middleware\CheckPermissionHandler;
 use App\Repositories\CompanyRepositoryInterface;
-use App\Helpers\Helper;
-use Illuminate\Support\Facades\App;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controllers\Middleware;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Services\Company\CompanyExportServiceInterface;
+use App\Services\Company\CompanyLogoServiceInterface;
+use App\Services\Company\CompanyRegistrationMailServiceInterface;
+use App\Services\Company\CompanyServiceInterface;
+use App\Services\Company\VatValidationServiceInterface;
+use App\Utils\PermissionChecker;
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\App;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CompanyController extends Controller implements HasMiddleware
 {
@@ -36,14 +36,14 @@ class CompanyController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware(CheckPermissionHandler::class . ':backoffice-company.create,company.create', only: ['store']),
-            new Middleware(CheckPermissionHandler::class . ':backoffice-company.list,backoffice-company.show-all,company.show', only: ['show']),
-            new Middleware(CheckPermissionHandler::class . ':backoffice-company.edit', only: ['update', 'sendRegisterMail']),
-            new Middleware(CheckPermissionHandler::class . ':backoffice-company.delete', only: ['destroy']),
-            new Middleware(CheckPermissionHandler::class . ':backoffice-company.import-csv', only: ['importCsv']),
-            new Middleware(CheckPermissionHandler::class . ':backoffice-company-logo.upload', only: ['uploadCompanyLogo']),
-            new Middleware(CheckPermissionHandler::class . ':backoffice-company-logo.delete', only: ['deleteCompanyLogo']),
-            new Middleware(CheckPermissionHandler::class . ':backoffice.company.create-report', only: ['createReport']),
+            new Middleware(CheckPermissionHandler::class.':backoffice-company.create,company.create', only: ['store']),
+            new Middleware(CheckPermissionHandler::class.':backoffice-company.list,backoffice-company.show-all,company.show', only: ['show']),
+            new Middleware(CheckPermissionHandler::class.':backoffice-company.edit', only: ['update', 'sendRegisterMail']),
+            new Middleware(CheckPermissionHandler::class.':backoffice-company.delete', only: ['destroy']),
+            new Middleware(CheckPermissionHandler::class.':backoffice-company.import-csv', only: ['importCsv']),
+            new Middleware(CheckPermissionHandler::class.':backoffice-company-logo.upload', only: ['uploadCompanyLogo']),
+            new Middleware(CheckPermissionHandler::class.':backoffice-company-logo.delete', only: ['deleteCompanyLogo']),
+            new Middleware(CheckPermissionHandler::class.':backoffice.company.create-report', only: ['createReport']),
         ];
     }
 
@@ -57,12 +57,12 @@ class CompanyController extends Controller implements HasMiddleware
 
     public function index(Request $request): JsonResponse
     {
-        $isAdmin = PermissionChecker::isAdmin($request) 
+        $isAdmin = PermissionChecker::isAdmin($request)
             || Helper::checkPermission('backoffice-company.show-all', $request);
 
-        if (!$isAdmin && !Helper::checkPermission('backoffice-company.list', $request)) {
+        if (! $isAdmin && ! Helper::checkPermission('backoffice-company.list', $request)) {
             return response()->json([
-                'message' => 'You do not have enough permissions to access this functionality. Missing Permission:backoffice-company.show-all or backoffice-company.list'
+                'message' => 'You do not have enough permissions to access this functionality. Missing Permission:backoffice-company.show-all or backoffice-company.list',
             ], 403);
         }
 
@@ -88,8 +88,8 @@ class CompanyController extends Controller implements HasMiddleware
 
             return response()->json([
                 'success' => true,
-                'message' => "Customer has been created",
-                'data' => $company
+                'message' => 'Customer has been created',
+                'data' => $company,
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -102,6 +102,7 @@ class CompanyController extends Controller implements HasMiddleware
     public function show(Request $request, string $id): JsonResponse
     {
         $result = $this->companyService->getCompanyById($id, $request);
+
         return response()->json($result);
     }
 
@@ -112,7 +113,7 @@ class CompanyController extends Controller implements HasMiddleware
 
             return response()->json([
                 'success' => true,
-                'message' => "Customer has been updated",
+                'message' => 'Customer has been updated',
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -125,6 +126,7 @@ class CompanyController extends Controller implements HasMiddleware
     public function createReport(): StreamedResponse
     {
         $companies = $this->companyRepository->getAll();
+
         return $this->exportService->exportToCsv($companies, 'companies_report.csv');
     }
 
@@ -133,7 +135,7 @@ class CompanyController extends Controller implements HasMiddleware
         try {
             $this->mailService->sendRegistrationMail($request->all());
 
-            return response()->json(['message' => "Mail sent successfully"]);
+            return response()->json(['message' => 'Mail sent successfully']);
         } catch (Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -149,7 +151,7 @@ class CompanyController extends Controller implements HasMiddleware
             return response()->json(['message' => 'Record deleted.'], 200);
         } catch (Exception $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 404);
         }
     }
@@ -162,7 +164,7 @@ class CompanyController extends Controller implements HasMiddleware
             return response()->json(['message' => 'Record restored.'], 200);
         } catch (Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 404);
         }
     }
@@ -196,7 +198,7 @@ class CompanyController extends Controller implements HasMiddleware
 
             return response()->json([
                 'success' => true,
-                'message' => "CSV imported successfully"
+                'message' => 'CSV imported successfully',
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -214,7 +216,7 @@ class CompanyController extends Controller implements HasMiddleware
             $companyId = Helper::getCompanyId($request->bearerToken());
             $company = $this->companyRepository->find($companyId);
 
-            if (!$company) {
+            if (! $company) {
                 return response()->json(['message' => 'Company not found'], 400);
             }
 
@@ -222,7 +224,7 @@ class CompanyController extends Controller implements HasMiddleware
 
             return response()->json([
                 'success' => true,
-                'message' => "Logo uploaded successfully"
+                'message' => 'Logo uploaded successfully',
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -238,7 +240,7 @@ class CompanyController extends Controller implements HasMiddleware
             $companyId = Helper::getCompanyId($request->bearerToken());
             $company = $this->companyRepository->find($companyId);
 
-            if (!$company) {
+            if (! $company) {
                 return response()->json(['message' => 'Company not found'], 400);
             }
 
@@ -246,7 +248,7 @@ class CompanyController extends Controller implements HasMiddleware
 
             return response()->json([
                 'success' => true,
-                'message' => "Logo deleted successfully"
+                'message' => 'Logo deleted successfully',
             ]);
         } catch (Exception $e) {
             return response()->json([

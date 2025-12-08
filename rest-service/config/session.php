@@ -3,7 +3,7 @@
 use Illuminate\Support\Str;
 
 return [
-    "JWT_KEY" => env('JWT_KEY', ''),
+    'JWT_KEY' => env('JWT_KEY', ''),
 
     /*
     |--------------------------------------------------------------------------
@@ -130,7 +130,7 @@ return [
 
     'cookie' => env(
         'SESSION_COOKIE',
-        Str::slug(env('APP_NAME', 'laravel'), '_') . '_session'
+        Str::slug(env('APP_NAME', 'laravel'), '_').'_session'
     ),
 
     /*

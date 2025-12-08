@@ -21,6 +21,6 @@ class Constants
         496 => 'backoffice-invoice.export-csv',
         497 => 'backoffice-invoice.export-csv-latest',
         498 => 'backoffice-invoice.export-invoice-plan',
-        543 => 'backoffice-invoice-status.edit'
+        543 => 'backoffice-invoice-status.edit',
     ];
 }

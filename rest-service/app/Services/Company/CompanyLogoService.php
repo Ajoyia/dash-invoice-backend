@@ -2,8 +2,8 @@
 
 namespace App\Services\Company;
 
-use App\Models\Company;
 use App\Helpers\Helper;
+use App\Models\Company;
 
 class CompanyLogoService implements CompanyLogoServiceInterface
 {

@@ -16,7 +16,7 @@ class CompanyDataTransformerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->transformer = new CompanyDataTransformer();
+        $this->transformer = new CompanyDataTransformer;
     }
 
     public function test_can_transform_company_for_list(): void
@@ -80,8 +80,8 @@ class CompanyDataTransformerTest extends TestCase
 
         // Mock invoices relationship
         $company->setRelation('invoices', collect([
-            (object)['total_amount' => 100.00],
-            (object)['total_amount' => 200.00],
+            (object) ['total_amount' => 100.00],
+            (object) ['total_amount' => 200.00],
         ]));
 
         $result = $this->transformer->transformForList($company);

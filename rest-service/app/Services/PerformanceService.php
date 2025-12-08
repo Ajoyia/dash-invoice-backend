@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class PerformanceService
 {
@@ -15,7 +15,7 @@ class PerformanceService
                 Log::warning('Slow Query Detected', [
                     'sql' => $query->sql,
                     'bindings' => $query->bindings,
-                    'time' => $query->time . 'ms'
+                    'time' => $query->time.'ms',
                 ]);
             }
         });
@@ -27,6 +27,7 @@ class PerformanceService
         DB::listen(function ($query) use (&$count) {
             $count++;
         });
+
         return $count;
     }
 

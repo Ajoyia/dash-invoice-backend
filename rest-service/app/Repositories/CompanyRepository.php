@@ -7,12 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-class CompanyRepository implements 
-    CompanyRepositoryInterface,
-    CompanyReadRepositoryInterface,
-    CompanyWriteRepositoryInterface,
-    CompanyQueryRepositoryInterface,
-    CompanyNumberGeneratorInterface
+class CompanyRepository implements CompanyNumberGeneratorInterface, CompanyQueryRepositoryInterface, CompanyReadRepositoryInterface, CompanyRepositoryInterface, CompanyWriteRepositoryInterface
 {
     public function find(string $id): ?Company
     {
@@ -75,6 +70,7 @@ class CompanyRepository implements
     public function update(Company $company, array $data): Company
     {
         $company->update($data);
+
         return $company->fresh();
     }
 
@@ -96,9 +92,9 @@ class CompanyRepository implements
     public function generateCompanyNumber(): string
     {
         $maxNumber = DB::table('companies')
-            ->max(DB::raw("CAST(SUBSTRING(company_number, 2) AS UNSIGNED)")) ?? 1000;
+            ->max(DB::raw('CAST(SUBSTRING(company_number, 2) AS UNSIGNED)')) ?? 1000;
 
-        return 'C' . ($maxNumber + 1);
+        return 'C'.($maxNumber + 1);
     }
 
     private function applySorting($query, string $sortBy, string $sortOrder)
@@ -113,6 +109,7 @@ class CompanyRepository implements
         ];
 
         $column = $sortMap[$sortBy] ?? $sortBy;
+
         return $query->orderBy($column, $sortOrder);
     }
 }

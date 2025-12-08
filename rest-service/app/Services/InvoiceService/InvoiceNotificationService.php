@@ -2,8 +2,8 @@
 
 namespace App\Services\InvoiceService;
 
-use App\Services\InvoiceService\Interfaces\InvoiceNotificationInterface;
 use App\Models\Invoice;
+use App\Services\InvoiceService\Interfaces\InvoiceNotificationInterface;
 use Illuminate\Support\Facades\Log;
 
 class InvoiceNotificationService implements InvoiceNotificationInterface
@@ -14,7 +14,7 @@ class InvoiceNotificationService implements InvoiceNotificationInterface
             'invoice_id' => $invoice->id,
             'invoice_number' => $invoice->invoice_number,
             'company_id' => $invoice->company_id,
-            'amount' => $invoice->total_amount
+            'amount' => $invoice->total_amount,
         ]);
     }
 
@@ -25,7 +25,7 @@ class InvoiceNotificationService implements InvoiceNotificationInterface
             'invoice_number' => $invoice->invoice_number,
             'old_status' => $oldStatus,
             'new_status' => $newStatus,
-            'company_id' => $invoice->company_id
+            'company_id' => $invoice->company_id,
         ]);
     }
 
@@ -36,7 +36,7 @@ class InvoiceNotificationService implements InvoiceNotificationInterface
             'invoice_number' => $invoice->invoice_number,
             'company_id' => $invoice->company_id,
             'amount' => $invoice->total_amount,
-            'paid_at' => $invoice->paid_at
+            'paid_at' => $invoice->paid_at,
         ]);
     }
 }

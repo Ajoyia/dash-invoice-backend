@@ -10,13 +10,13 @@ class RedisQueueService implements QueueServiceInterface
 
     public function __construct()
     {
-        $this->redis = new Redis();
+        $this->redis = new Redis;
         $host = config('authredis.connection.host') ?: env('REDIS_HOST', '127.0.0.1');
         $port = config('authredis.connection.port') ?: env('REDIS_PORT', 6379);
         $password = config('authredis.connection.password') ?: env('REDIS_PASSWORD', null);
 
         $this->redis->connect($host, $port);
-        
+
         if ($password) {
             $this->redis->auth($password);
         }

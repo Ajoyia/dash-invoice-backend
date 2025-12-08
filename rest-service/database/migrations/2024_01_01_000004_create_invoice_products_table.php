@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('invoice_products', function (Blueprint $table) {
-            $table->string("id")->primary();
+            $table->string('id')->primary();
             $table->string('invoice_id')->references('id')->on('invoices')->onDelete('cascade')->nullable();
             $table->string('pos')->nullable();
             $table->string('article_number')->nullable();
@@ -32,4 +32,3 @@ return new class extends Migration
         Schema::dropIfExists('invoice_products');
     }
 };
-

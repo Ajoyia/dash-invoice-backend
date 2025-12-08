@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Helpers\UUIDGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Helpers\UUIDGenerator;
 
 class MailTemplateAssignment extends Model
 {
@@ -34,6 +34,4 @@ class MailTemplateAssignment extends Model
     }
 
     protected $fillable = ['module', 'mail_template_id', 'cc', 'bcc', 'sender_mail', 'reminder_hours'];
-
 }
-

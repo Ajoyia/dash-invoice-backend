@@ -16,7 +16,7 @@ class CompanyRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new CompanyRepository();
+        $this->repository = new CompanyRepository;
     }
 
     public function test_can_find_company_by_id(): void

@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Carbon\Carbon;
 
 class InvoiceResource extends JsonResource
 {
@@ -19,8 +19,8 @@ class InvoiceResource extends JsonResource
             'id' => $this->id,
             'invoiceNumber' => $this->invoice_number,
             'companyId' => $this->company_id,
-            'companyName' => $this->company->company_name ?? "",
-            'company' =>  $this->company ? [
+            'companyName' => $this->company->company_name ?? '',
+            'company' => $this->company ? [
                 'id' => $this->company->id,
                 'companyNumber' => $this->company->company_number,
                 'companyName' => $this->company->company_name,
@@ -55,7 +55,7 @@ class InvoiceResource extends JsonResource
             'createdAt' => Carbon::parse($this->created_at)->toDateString(),
             'referenceInvoiceDetail' => $this->referenceInvoice ? [
                 'id' => $this->referenceInvoice?->id ?? null,
-                'invoiceNumber' => $this->referenceInvoice?->invoice_number ?? null
+                'invoiceNumber' => $this->referenceInvoice?->invoice_number ?? null,
             ] : null,
             'products' => isset($this->products) ? $this->products->map(function ($product) {
                 return [

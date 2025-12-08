@@ -2,23 +2,23 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\Services\InvoiceService\GlobalSettingsService;
+use App\Services\InvoiceService\Interfaces\GlobalSettingsServiceInterface;
+use App\Services\InvoiceService\Interfaces\InvoiceCalculationInterface;
+use App\Services\InvoiceService\Interfaces\InvoiceExportServiceInterface;
 use App\Services\InvoiceService\Interfaces\InvoiceListingServiceInterface;
 use App\Services\InvoiceService\Interfaces\InvoiceManagementServiceInterface;
-use App\Services\InvoiceService\Interfaces\InvoiceExportServiceInterface;
-use App\Services\InvoiceService\Interfaces\GlobalSettingsServiceInterface;
+use App\Services\InvoiceService\Interfaces\InvoiceNotificationInterface;
 use App\Services\InvoiceService\Interfaces\InvoiceNumberGeneratorInterface;
 use App\Services\InvoiceService\Interfaces\InvoiceValidatorInterface;
-use App\Services\InvoiceService\Interfaces\InvoiceNotificationInterface;
-use App\Services\InvoiceService\Interfaces\InvoiceCalculationInterface;
+use App\Services\InvoiceService\InvoiceCalculationService;
+use App\Services\InvoiceService\InvoiceExportService;
 use App\Services\InvoiceService\InvoiceListingService;
 use App\Services\InvoiceService\InvoiceManagementService;
-use App\Services\InvoiceService\InvoiceExportService;
-use App\Services\InvoiceService\GlobalSettingsService;
-use App\Services\InvoiceService\InvoiceNumberGenerator;
-use App\Services\InvoiceService\InvoiceCalculationService;
-use App\Services\InvoiceService\InvoiceValidatorService;
 use App\Services\InvoiceService\InvoiceNotificationService;
+use App\Services\InvoiceService\InvoiceNumberGenerator;
+use App\Services\InvoiceService\InvoiceValidatorService;
+use Illuminate\Support\ServiceProvider;
 
 class InvoiceServiceProvider extends ServiceProvider
 {

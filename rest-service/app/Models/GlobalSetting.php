@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Helpers\UUIDGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Helpers\UUIDGenerator;
 
 class GlobalSetting extends Model
 {
@@ -34,6 +34,4 @@ class GlobalSetting extends Model
     use HasFactory;
 
     protected $fillable = ['key', 'value'];
-
 }
-

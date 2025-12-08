@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 class VatlayerService
 {
     protected string $apiKey;
+
     protected string $endpoint;
 
     public function __construct()
@@ -17,10 +18,10 @@ class VatlayerService
 
     public function validate(string $vatNumber)
     {
-        $url = $this->endpoint . '?access_key=' . $this->apiKey . '&vat_number=' . urlencode($vatNumber);
+        $url = $this->endpoint.'?access_key='.$this->apiKey.'&vat_number='.urlencode($vatNumber);
 
         $response = Http::get($url);
-        
+
         return $response->json();
     }
 }

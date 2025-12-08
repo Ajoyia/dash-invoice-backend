@@ -38,14 +38,14 @@ class InvoiceRequest extends FormRequest
             'netto' => 'nullable',
             'taxAmount' => 'nullable',
             'totalAmount' => 'nullable',
-            "products" => "required|array",
+            'products' => 'required|array',
             'products.*.productName' => 'required|string',
             'products.*.quantity' => 'required',
             'products.*.tax' => 'required',
             'products.*.totalCredits' => 'required',
             'products.*.credits' => 'required',
             'products.*.creditPrice' => 'required',
-            'products.*.nettoTotal' => 'required'
+            'products.*.nettoTotal' => 'required',
         ];
     }
 

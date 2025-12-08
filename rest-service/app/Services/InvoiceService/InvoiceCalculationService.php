@@ -2,8 +2,8 @@
 
 namespace App\Services\InvoiceService;
 
-use App\Services\InvoiceService\Interfaces\InvoiceCalculationInterface;
 use App\Models\Invoice;
+use App\Services\InvoiceService\Interfaces\InvoiceCalculationInterface;
 
 class InvoiceCalculationService implements InvoiceCalculationInterface
 {
@@ -30,6 +30,7 @@ class InvoiceCalculationService implements InvoiceCalculationInterface
     public function calculateTaxForProduct(array $product): float
     {
         $netAmount = $this->calculateProductTotal($product);
+
         return $netAmount * ($product['tax'] / 100);
     }
 }

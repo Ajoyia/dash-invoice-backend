@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Extension;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ExtensionSeeder extends Seeder
@@ -13,7 +12,7 @@ class ExtensionSeeder extends Seeder
      */
     public function run(): void
     {
-        $extension = new Extension();
+        $extension = new Extension;
         $extension->name = 'Opg to 3D';
         $extension->status = 'active';
         $extension->queue_name = '';

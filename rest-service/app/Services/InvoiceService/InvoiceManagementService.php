@@ -2,7 +2,6 @@
 
 namespace App\Services\InvoiceService;
 
-use App\Repositories\InvoiceRepositoryInterface;
 use App\Models\Invoice;
 use App\Services\InvoiceService\Interfaces\InvoiceManagementServiceInterface;
 use Carbon\Carbon;
@@ -41,7 +40,7 @@ class InvoiceManagementService extends AbstractInvoiceService implements Invoice
     public function updateInvoiceStatus(Request $request, string $id)
     {
         $request->validate([
-            "status" => "required|in:approved,sent,paid,warning level 1,warning level 2,warning level 3",
+            'status' => 'required|in:approved,sent,paid,warning level 1,warning level 2,warning level 3',
         ]);
 
         try {
@@ -64,7 +63,7 @@ class InvoiceManagementService extends AbstractInvoiceService implements Invoice
 
         return response()->json([
             'success' => true,
-            'message' => "Invoice status has been updated"
+            'message' => 'Invoice status has been updated',
         ]);
     }
 }

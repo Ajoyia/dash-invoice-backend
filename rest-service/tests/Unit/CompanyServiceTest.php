@@ -7,23 +7,24 @@ use App\Repositories\CompanyRepositoryInterface;
 use App\Services\Company\CompanyDataTransformer;
 use App\Services\Company\CompanyService;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Mockery;
 use Tests\TestCase;
 
 class CompanyServiceTest extends TestCase
 {
     private CompanyService $service;
+
     private $mockRepository;
+
     private $mockTransformer;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->mockRepository = Mockery::mock(CompanyRepositoryInterface::class);
-        $this->mockTransformer = new CompanyDataTransformer();
-        
+        $this->mockTransformer = new CompanyDataTransformer;
+
         $this->service = new CompanyService(
             $this->mockRepository,
             $this->mockTransformer
@@ -48,7 +49,7 @@ class CompanyServiceTest extends TestCase
             ->with($company->id)
             ->andReturn($company);
 
-        $request = Request::create('/companies/' . $company->id);
+        $request = Request::create('/companies/'.$company->id);
         $result = $this->service->getCompanyById($company->id, $request);
 
         $this->assertIsArray($result);

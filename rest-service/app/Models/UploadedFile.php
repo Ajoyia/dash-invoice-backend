@@ -24,4 +24,3 @@ class UploadedFile extends Model
         return $this->morphTo();
     }
 }
-

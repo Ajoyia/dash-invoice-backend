@@ -62,7 +62,7 @@ class CompanyDataTransformer
 
     private function transformBankDetails(Company $company): array
     {
-        if (!$company->relationLoaded('bankDetails') || !$company->bankDetails) {
+        if (! $company->relationLoaded('bankDetails') || ! $company->bankDetails) {
             return [];
         }
 
@@ -89,6 +89,7 @@ class CompanyDataTransformer
             if ($company->relationLoaded('invoices')) {
                 return collect($company->invoices)->sum('total_amount');
             }
+
             return $company->invoices()->sum('total_amount');
         } catch (\Exception $e) {
             return 0.0;

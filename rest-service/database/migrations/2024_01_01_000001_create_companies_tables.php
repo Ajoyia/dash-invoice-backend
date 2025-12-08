@@ -2,21 +2,21 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::create('companies', function (Blueprint $table) {
-            $table->string("id")->primary();
+            $table->string('id')->primary();
             $table->string('company_number')->nullable();
             $table->string('company_name');
             $table->string('company_id')->nullable();
             $table->string('vat_id')->nullable();
             $table->string('phone')->nullable();
-            $table->enum("status", ["active", "inactive", "new"])->default("new")->nullable();
+            $table->enum('status', ['active', 'inactive', 'new'])->default('new')->nullable();
             $table->string('invoice_email')->nullable();
             $table->string('warning_invoice_email')->nullable();
             $table->string('notification_mail')->nullable();
@@ -58,4 +58,3 @@ return new class extends Migration
         Schema::dropIfExists('companies');
     }
 };
-

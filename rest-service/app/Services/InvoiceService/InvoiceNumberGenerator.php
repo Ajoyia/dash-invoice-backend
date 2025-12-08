@@ -2,8 +2,8 @@
 
 namespace App\Services\InvoiceService;
 
-use App\Services\InvoiceService\Interfaces\InvoiceNumberGeneratorInterface;
 use App\Models\Invoice;
+use App\Services\InvoiceService\Interfaces\InvoiceNumberGeneratorInterface;
 
 class InvoiceNumberGenerator implements InvoiceNumberGeneratorInterface
 {
@@ -16,18 +16,18 @@ class InvoiceNumberGenerator implements InvoiceNumberGeneratorInterface
         }
 
         $year = now()->format('y');
-        $pattern = $year . '-%';
-        
+        $pattern = $year.'-%';
+
         $lastInvoice = Invoice::where('invoice_number', 'like', $pattern)
             ->orderByRaw('CAST(SUBSTRING_INDEX(invoice_number, "-", -1) AS UNSIGNED) DESC')
             ->value('invoice_number');
 
-        if ($lastInvoice && preg_match('/' . preg_quote($year, '/') . '-(\d+)/', $lastInvoice, $matches)) {
-            $nextNumber = (int)$matches[1] + 1;
+        if ($lastInvoice && preg_match('/'.preg_quote($year, '/').'-(\d+)/', $lastInvoice, $matches)) {
+            $nextNumber = (int) $matches[1] + 1;
         } else {
             $nextNumber = self::STARTING_INVOICE_NUMBER;
         }
 
-        return $year . '-' . $nextNumber;
+        return $year.'-'.$nextNumber;
     }
 }
