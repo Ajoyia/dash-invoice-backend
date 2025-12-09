@@ -36,8 +36,9 @@ class CheckPermissionHandler
         }
 
         $missingPermission = $check_permissions[0] ?? 'unknown';
+
         return response()->json([
-            'message' => 'You do not have enough permissions to access this functionality. Missing Permission: '.$missingPermission
+            'message' => 'You do not have enough permissions to access this functionality. Missing Permission: '.$missingPermission,
         ], 403);
     }
 }

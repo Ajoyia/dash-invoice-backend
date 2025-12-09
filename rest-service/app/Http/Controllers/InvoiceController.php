@@ -130,13 +130,6 @@ class InvoiceController extends Controller implements HasMiddleware
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Post(
      *     path="/invoices",
      *     operationId="CreateInvoice",
@@ -247,13 +240,6 @@ class InvoiceController extends Controller implements HasMiddleware
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  string  $id
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Get(
      *      path="/invoices/{id}",
      *      operationId="getInvoiceById",
@@ -302,14 +288,6 @@ class InvoiceController extends Controller implements HasMiddleware
             ], 404);
         }
     }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $id
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Put(
@@ -574,12 +552,6 @@ class InvoiceController extends Controller implements HasMiddleware
     }
 
     /**
-     * Save global settings.
-     *
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Post(
      *     path="/global-settings/document-assignment",
      *     operationId="DocumentAssignmentSave",
@@ -641,13 +613,6 @@ class InvoiceController extends Controller implements HasMiddleware
     {
         return $this->invoiceService->documentAssignmentSave($request);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  string  $id
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Delete(

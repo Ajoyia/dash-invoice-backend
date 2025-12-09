@@ -36,7 +36,7 @@ class Helper
             AND COLUMN_NAME = ?
             AND REFERENCED_COLUMN_NAME IS NOT NULL', [$schemaName, $table, $column]);
 
-        return !empty($foreignKeys);
+        return ! empty($foreignKeys);
     }
 
     public static function checkPermission(string $permission, Request $request): bool
@@ -59,7 +59,7 @@ class Helper
         $extension = $file['extension'] ?? '';
         $id = $file['id'] ?? '';
 
-        $uploadedFile = new UploadedFile();
+        $uploadedFile = new UploadedFile;
         if ($type !== null) {
             $uploadedFile->type = $type;
         }

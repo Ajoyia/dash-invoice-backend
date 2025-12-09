@@ -43,7 +43,7 @@ class CompanyService implements CompanyServiceInterface
     {
         $company = $this->repository->find($id);
 
-        if (! $company) {
+        if ($company === null) {
             return ['modelData' => []];
         }
 
@@ -58,7 +58,7 @@ class CompanyService implements CompanyServiceInterface
             $companyData = $this->prepareCompanyData($data, $request);
             $company = $this->repository->create($companyData);
 
-            if (! empty($data['bankDetails'])) {
+            if (!empty($data['bankDetails'])) {
                 $this->createBankDetails($company, $data['bankDetails']);
             }
 
@@ -74,7 +74,7 @@ class CompanyService implements CompanyServiceInterface
             $companyData = $this->prepareUpdateData($data, $request);
             $this->repository->update($company, $companyData);
 
-            if (! empty($data['bankDetails'])) {
+            if (!empty($data['bankDetails'])) {
                 $this->updateBankDetails($company, $data['bankDetails']);
             }
 
@@ -94,7 +94,7 @@ class CompanyService implements CompanyServiceInterface
         $company = $this->repository->find($id);
 
         if ($company === null) {
-            throw new CompanyNotFoundException();
+            throw new CompanyNotFoundException;
         }
 
         return $this->repository->restore($company);
@@ -105,7 +105,7 @@ class CompanyService implements CompanyServiceInterface
         $company = $this->repository->find($companyId);
 
         if ($company === null) {
-            throw new CompanyNotFoundException();
+            throw new CompanyNotFoundException;
         }
 
         return (float) ($company->credits ?? 0.0);
