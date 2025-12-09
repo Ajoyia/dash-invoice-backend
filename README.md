@@ -155,7 +155,7 @@ http://localhost:8000/api/documentation
 
 ## Code Quality Standards
 
-This project follows German engineering standards for clean, scalable code:
+This project follows following standards for clean, scalable code:
 
 - **Type Safety**: Full type declarations and return types throughout
 - **Static Analysis**: PHPStan level 8 for comprehensive type checking
