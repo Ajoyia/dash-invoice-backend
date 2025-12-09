@@ -58,7 +58,7 @@ class CompanyService implements CompanyServiceInterface
             $companyData = $this->prepareCompanyData($data, $request);
             $company = $this->repository->create($companyData);
 
-            if (!empty($data['bankDetails'])) {
+            if (! empty($data['bankDetails'])) {
                 $this->createBankDetails($company, $data['bankDetails']);
             }
 
@@ -74,7 +74,7 @@ class CompanyService implements CompanyServiceInterface
             $companyData = $this->prepareUpdateData($data, $request);
             $this->repository->update($company, $companyData);
 
-            if (!empty($data['bankDetails'])) {
+            if (! empty($data['bankDetails'])) {
                 $this->updateBankDetails($company, $data['bankDetails']);
             }
 

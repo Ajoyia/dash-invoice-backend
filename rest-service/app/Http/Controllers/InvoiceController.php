@@ -744,7 +744,7 @@ class InvoiceController extends Controller implements HasMiddleware
 
         $invoices = new Invoice;
 
-        if (!$isAdmin && $companyId !== null) {
+        if (! $isAdmin && $companyId !== null) {
             $invoices = $invoices->where('company_id', $companyId);
         }
 
@@ -880,7 +880,7 @@ class InvoiceController extends Controller implements HasMiddleware
             $isAdmin = true;
         }
 
-        if ($companyId === null && !$isAdmin) {
+        if ($companyId === null && ! $isAdmin) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid token',
