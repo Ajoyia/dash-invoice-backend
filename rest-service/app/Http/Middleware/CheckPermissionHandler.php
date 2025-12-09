@@ -18,8 +18,9 @@ class CheckPermissionHandler
 
         // Get request variables
         $available_permissions = $request->get('auth_user_permissions');
-        $roles = $request->get('auth_user_roles');
-        if (in_array('admin', $roles)) {
+        $roles = $request->get('auth_user_roles') ?? [];
+
+        if (in_array('admin', $roles, true)) {
             return $next($request);
         }
 
@@ -29,11 +30,14 @@ class CheckPermissionHandler
 
         // Check if the given permission exist in available permission
         foreach ($check_permissions as $permission) {
-            if (in_array($permission, $available_permissions)) {
+            if (in_array($permission, $available_permissions, true)) {
                 return $next($request);
             }
         }
 
-        return response()->json(['message' => 'You do not have enough permissions to access this functionality. Missing Permission:'.$check_permissions[0] ?? ''], 403);
+        $missingPermission = $check_permissions[0] ?? 'unknown';
+        return response()->json([
+            'message' => 'You do not have enough permissions to access this functionality. Missing Permission: '.$missingPermission
+        ], 403);
     }
 }

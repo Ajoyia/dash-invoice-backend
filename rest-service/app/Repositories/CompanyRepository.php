@@ -97,7 +97,7 @@ class CompanyRepository implements CompanyNumberGeneratorInterface, CompanyQuery
         return 'C'.($maxNumber + 1);
     }
 
-    private function applySorting($query, string $sortBy, string $sortOrder)
+    private function applySorting($query, string $sortBy, string $sortOrder): mixed
     {
         $sortMap = [
             'companyName' => 'company_name',

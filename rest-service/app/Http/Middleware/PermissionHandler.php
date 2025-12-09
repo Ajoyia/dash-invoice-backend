@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use App\Constants;
 use Closure;
-use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Http\Request;
@@ -22,11 +21,11 @@ class PermissionHandler
     {
         $token = $request->bearerToken();
         try {
-            if (isset($token)) {
-                $token_response = (array) JWT::decode($token, new Key(config('session.JWT_KEY'), 'HS256'));
-            } else {
-                throw new Exception('Please provide correct token');
+            if ($token === null) {
+                return response()->json(['message' => 'Please provide correct token'], 401);
             }
+
+            $token_response = (array) JWT::decode($token, new Key(config('session.JWT_KEY'), 'HS256'));
             /* if (isset($token_response["user_id"]) == false) {
                 return response()->json(['message' => 'Token is invalid!'], 419); //commenting it out a token can exist without a user id
             } */

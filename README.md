@@ -104,10 +104,30 @@ php artisan l5-swagger:generate
 php artisan test
 ```
 
-### Code Formatting
+### Code Quality
+
+#### Code Formatting
 
 ```bash
+composer format
+# or
 ./vendor/bin/pint
+```
+
+#### Static Analysis (PHPStan)
+
+```bash
+composer analyse
+# or
+./vendor/bin/phpstan analyse
+```
+
+#### Run Tests
+
+```bash
+composer test
+# or
+php artisan test
 ```
 
 ## API Documentation
@@ -126,9 +146,22 @@ http://localhost:8000/api/documentation
 
 ## Main Features
 
-- Company management (CRUD operations)
+- Company management
 - Invoice management with products
 - CSV import/export functionality
 - VAT ID validation
 - Mail template assignments
 - Global settings management
+
+## Code Quality Standards
+
+This project follows German engineering standards for clean, scalable code:
+
+- **Type Safety**: Full type declarations and return types throughout
+- **Static Analysis**: PHPStan level 8 for comprehensive type checking
+- **Exception Handling**: Custom exceptions for better error handling
+- **Code Formatting**: Laravel Pint for consistent code style
+- **SOLID Principles**: Repository pattern, dependency injection, interface segregation
+- **PSR Standards**: PSR-4 autoloading, PSR-12 coding style
+- **Error Handling**: Consistent error response format across all endpoints
+- **Null Safety**: Proper null checks and type guards throughout

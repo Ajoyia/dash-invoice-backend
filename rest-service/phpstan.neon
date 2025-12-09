@@ -1,0 +1,10 @@
+parameters:
+    level: 8
+    paths:
+        - app
+    excludePaths:
+        - app/Console/Commands
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    reportUnmatchedIgnoredErrors: false
+

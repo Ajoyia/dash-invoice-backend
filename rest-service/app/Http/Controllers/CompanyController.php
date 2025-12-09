@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CompanyNotFoundException;
 use App\Helpers\Helper;
 use App\Http\Middleware\CheckPermissionHandler;
 use App\Http\Requests\CompanyRequest;
@@ -13,12 +14,13 @@ use App\Services\Company\CompanyRegistrationMailServiceInterface;
 use App\Services\Company\CompanyServiceInterface;
 use App\Services\Company\VatValidationServiceInterface;
 use App\Utils\PermissionChecker;
-use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\App;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -90,12 +92,18 @@ class CompanyController extends Controller implements HasMiddleware
                 'success' => true,
                 'message' => 'Customer has been created',
                 'data' => $company,
-            ]);
-        } catch (Exception $e) {
+            ], 201);
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
+                'errors' => $e->errors(),
             ], 422);
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create company. Please try again.',
+            ], 500);
         }
     }
 
@@ -115,11 +123,22 @@ class CompanyController extends Controller implements HasMiddleware
                 'success' => true,
                 'message' => 'Customer has been updated',
             ]);
-        } catch (Exception $e) {
+        } catch (CompanyNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
+            ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
             ], 422);
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update company. Please try again.',
+            ], 500);
         }
     }
 
@@ -135,10 +154,14 @@ class CompanyController extends Controller implements HasMiddleware
         try {
             $this->mailService->sendRegistrationMail($request->all());
 
-            return response()->json(['message' => 'Mail sent successfully']);
-        } catch (Exception $e) {
             return response()->json([
-                'message' => $e->getMessage(),
+                'success' => true,
+                'message' => 'Mail sent successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send mail. Please try again.',
             ], 500);
         }
     }
@@ -148,10 +171,14 @@ class CompanyController extends Controller implements HasMiddleware
         try {
             $this->companyService->deleteCompany($id);
 
-            return response()->json(['message' => 'Record deleted.'], 200);
-        } catch (Exception $e) {
             return response()->json([
-                'error' => $e->getMessage(),
+                'success' => true,
+                'message' => 'Record deleted.',
+            ]);
+        } catch (CompanyNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
             ], 404);
         }
     }
@@ -161,9 +188,13 @@ class CompanyController extends Controller implements HasMiddleware
         try {
             $this->companyService->restoreCompany($id);
 
-            return response()->json(['message' => 'Record restored.'], 200);
-        } catch (Exception $e) {
             return response()->json([
+                'success' => true,
+                'message' => 'Record restored.',
+            ]);
+        } catch (CompanyNotFoundException $e) {
+            return response()->json([
+                'success' => false,
                 'message' => $e->getMessage(),
             ], 404);
         }
@@ -172,23 +203,36 @@ class CompanyController extends Controller implements HasMiddleware
     public function getCredits(Request $request): JsonResponse
     {
         $companyId = Helper::getCompanyId($request->bearerToken());
+        if ($companyId === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid token',
+            ], 401);
+        }
+
         $credits = $this->companyService->getCompanyCredits($companyId);
 
-        return response()->json(['credits' => $credits]);
+        return response()->json([
+            'success' => true,
+            'data' => ['credits' => $credits],
+        ]);
     }
 
     public function getResellerPartner(Request $request): JsonResponse
     {
         return response()->json([
-            'salesPartnerCompany' => null,
-            'resellerCompany' => null,
-            'servicePartnerCompany' => null,
+            'success' => true,
+            'data' => [
+                'salesPartnerCompany' => null,
+                'resellerCompany' => null,
+                'servicePartnerCompany' => null,
+            ],
         ]);
     }
 
     public function importCsv(Request $request): JsonResponse
     {
-        $request->validate(['file' => 'required']);
+        $request->validate(['file' => 'required|file|mimes:csv,txt']);
 
         $locale = $request->header('Accept-Language', 'en');
         App::setLocale($locale);
@@ -200,7 +244,13 @@ class CompanyController extends Controller implements HasMiddleware
                 'success' => true,
                 'message' => 'CSV imported successfully',
             ]);
-        } catch (Exception $e) {
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => __('messages.csv_upload_error'),
@@ -210,14 +260,23 @@ class CompanyController extends Controller implements HasMiddleware
 
     public function uploadCompanyLogo(Request $request): JsonResponse
     {
-        $request->validate(['image' => 'required']);
+        $request->validate(['image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048']);
 
         try {
             $companyId = Helper::getCompanyId($request->bearerToken());
-            $company = $this->companyRepository->find($companyId);
+            if ($companyId === null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid token',
+                ], 401);
+            }
 
-            if (! $company) {
-                return response()->json(['message' => 'Company not found'], 400);
+            $company = $this->companyRepository->find($companyId);
+            if ($company === null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Company not found',
+                ], 404);
             }
 
             $this->logoService->uploadLogo($company, $request->image);
@@ -226,11 +285,17 @@ class CompanyController extends Controller implements HasMiddleware
                 'success' => true,
                 'message' => 'Logo uploaded successfully',
             ]);
-        } catch (Exception $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
+                'errors' => $e->errors(),
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload logo. Please try again.',
+            ], 500);
         }
     }
 
@@ -238,10 +303,19 @@ class CompanyController extends Controller implements HasMiddleware
     {
         try {
             $companyId = Helper::getCompanyId($request->bearerToken());
-            $company = $this->companyRepository->find($companyId);
+            if ($companyId === null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid token',
+                ], 401);
+            }
 
-            if (! $company) {
-                return response()->json(['message' => 'Company not found'], 400);
+            $company = $this->companyRepository->find($companyId);
+            if ($company === null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Company not found',
+                ], 404);
             }
 
             $this->logoService->deleteLogo($company);
@@ -250,11 +324,11 @@ class CompanyController extends Controller implements HasMiddleware
                 'success' => true,
                 'message' => 'Logo deleted successfully',
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
-            ], 422);
+                'message' => 'Failed to delete logo. Please try again.',
+            ], 500);
         }
     }
 }

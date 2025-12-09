@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\InvoicePlanExport;
+use App\Exceptions\InvoiceNotFoundException;
 use App\Helpers\Helper;
 use App\Http\Middleware\CheckPermissionHandler;
 use App\Http\Requests\InvoiceRequest;
@@ -11,11 +12,14 @@ use App\Models\Invoice;
 use App\Services\InvoiceService\InvoiceService;
 use App\Traits\CustomHelper;
 use App\Utils\PermissionChecker;
-use Exception;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InvoiceController extends Controller implements HasMiddleware
 {
@@ -105,7 +109,7 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         if (PermissionChecker::isAdmin($request) || Helper::checkPermission('backoffice-invoice.show-all', $request)) {
             return $this->invoiceService->listInvoices($request, true);
@@ -115,11 +119,12 @@ class InvoiceController extends Controller implements HasMiddleware
         }
 
         return response()->json([
+            'success' => false,
             'message' => 'You do not have enough permissions to access this functionality. Missing Permission: backoffice-invoice.show-all or backoffice-invoice.list',
         ], 403);
     }
 
-    public function customerInvoices(Request $request)
+    public function customerInvoices(Request $request): JsonResponse
     {
         return $this->invoiceService->listInvoices($request, false);
     }
@@ -213,19 +218,32 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function store(InvoiceRequest $request)
+    public function store(InvoiceRequest $request): JsonResponse
     {
-        $validated_data = $request->validated();
-        $data = $this->convertKeysToSnakeCase(collect($validated_data));
-        $data['user_id'] = $request->get('auth_user_id');
+        try {
+            $validated_data = $request->validated();
+            $data = $this->convertKeysToSnakeCase(collect($validated_data));
+            $data['user_id'] = $request->get('auth_user_id');
 
-        $invoice = $this->invoiceService->storeInvoice($data);
+            $invoice = $this->invoiceService->storeInvoice($data);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Invoice has been created',
-            'data' => $invoice,
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice has been created',
+                'data' => $invoice,
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create invoice. Please try again.',
+            ], 500);
+        }
     }
 
     /**
@@ -268,11 +286,21 @@ class InvoiceController extends Controller implements HasMiddleware
      *      )
      *     )
      */
-    public function show($id)
+    public function show(string $id): JsonResponse
     {
-        $invoice = Invoice::findOrFail($id);
+        try {
+            $invoice = Invoice::findOrFail($id);
 
-        return response()->json(['data' => new InvoiceResource($invoice)]);
+            return response()->json([
+                'success' => true,
+                'data' => new InvoiceResource($invoice),
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invoice not found',
+            ], 404);
+        }
     }
 
     /**
@@ -387,23 +415,34 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function update(InvoiceRequest $request, $id)
+    public function update(InvoiceRequest $request, string $id): JsonResponse
     {
         try {
             $validated_data = $request->validated();
             $data = $this->convertKeysToSnakeCase(collect($validated_data));
             $this->invoiceService->updateInvoice($id, $data);
-        } catch (Exception $e) {
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice has been updated',
+            ]);
+        } catch (InvoiceNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
+            ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
             ], 422);
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update invoice. Please try again.',
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Invoice has been updated',
-        ]);
     }
 
     /**
@@ -486,7 +525,7 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function updateInvoiceStatus(Request $request, $id)
+    public function updateInvoiceStatus(Request $request, string $id): JsonResponse
     {
         return $this->invoiceService->updateInvoiceStatus($request, $id);
     }
@@ -529,7 +568,7 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function documentAssignmentList()
+    public function documentAssignmentList(): JsonResponse
     {
         return $this->invoiceService->documentAssignmentList();
     }
@@ -598,7 +637,7 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function documentAssignmentSave(Request $request)
+    public function documentAssignmentSave(Request $request): JsonResponse
     {
         return $this->invoiceService->documentAssignmentSave($request);
     }
@@ -666,7 +705,7 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function destroy($id)
+    public function destroy(string $id): JsonResponse
     {
         return $this->invoiceService->deleteInvoice($id);
     }
@@ -720,7 +759,7 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function downloadCSV(Request $request)
+    public function downloadCSV(Request $request): StreamedResponse|JsonResponse
     {
         if (PermissionChecker::isAdmin($request) || Helper::checkPermission('backoffice-invoice.show-all', $request)) {
             return $this->downloadInvoice($request, true);
@@ -729,26 +768,25 @@ class InvoiceController extends Controller implements HasMiddleware
         return $this->downloadInvoice($request, false);
     }
 
-    public function downloadCustomerCSV(Request $request)
+    public function downloadCustomerCSV(Request $request): StreamedResponse|JsonResponse
     {
         return $this->downloadInvoice($request, false);
     }
 
-    public function downloadInvoice(Request $request, bool $isAdmin)
+    private function downloadInvoice(Request $request, bool $isAdmin): StreamedResponse|JsonResponse
     {
-        $company_id = Helper::getCompanyId($request->bearerToken());
+        $companyId = Helper::getCompanyId($request->bearerToken());
 
         $invoices = new Invoice;
 
-        if (! $isAdmin) {
-            $invoices = $invoices->where('company_id', $company_id);
+        if (!$isAdmin && $companyId !== null) {
+            $invoices = $invoices->where('company_id', $companyId);
         }
 
-        $file_name = 'invoices.csv';
-
+        $fileName = 'invoices.csv';
         $invoices = $invoices->get();
 
-        return $this->invoiceService->createCSV($invoices, $file_name, 'invoice', false, $request);
+        return $this->invoiceService->createCSV($invoices, $fileName, 'invoice', false, $request);
     }
 
     /**
@@ -800,7 +838,7 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function downloadLatestCSV(Request $request)
+    public function downloadLatestCSV(Request $request): StreamedResponse|JsonResponse
     {
         if (PermissionChecker::isAdmin($request) || Helper::checkPermission('backoffice-invoice.show-all', $request)) {
             return $this->downloadLatestInvoice($request, true);
@@ -809,12 +847,12 @@ class InvoiceController extends Controller implements HasMiddleware
         return $this->downloadLatestInvoice($request, false);
     }
 
-    public function downloadLatestCustomerCSV(Request $request)
+    public function downloadLatestCustomerCSV(Request $request): StreamedResponse|JsonResponse
     {
         return $this->downloadLatestInvoice($request, false);
     }
 
-    public function downloadLatestInvoice(Request $request, bool $isAdmin)
+    private function downloadLatestInvoice(Request $request, bool $isAdmin): StreamedResponse|JsonResponse
     {
         return $this->downloadCSV($request);
     }
@@ -868,16 +906,22 @@ class InvoiceController extends Controller implements HasMiddleware
      *     )
      * )
      */
-    public function downloadInvoicePlan(Request $request)
+    public function downloadInvoicePlan(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse|JsonResponse
     {
-        $company_id = Helper::getCompanyId($request->bearerToken());
+        $companyId = Helper::getCompanyId($request->bearerToken());
         $isAdmin = false;
 
         if (PermissionChecker::isAdmin($request) || Helper::checkPermission('backoffice-invoice.show-all', $request)) {
             $isAdmin = true;
         }
 
-        // Pass companyId and request data to the export class
-        return Excel::download(new InvoicePlanExport($company_id, $isAdmin), 'invoiceplan.csv');
+        if ($companyId === null && !$isAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid token',
+            ], 401);
+        }
+
+        return Excel::download(new InvoicePlanExport($companyId, $isAdmin), 'invoiceplan.csv');
     }
 }

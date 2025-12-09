@@ -5,75 +5,83 @@ namespace App\Helpers;
 use App\Models\UploadedFile;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class Helper
 {
-    public static function getCompanyId($token)
+    public static function getCompanyId(string $token): ?string
     {
-        $tokenResponse = (array) JWT::decode($token, new Key(
-            config('session.JWT_KEY'),
-            'HS256'
-        ));
+        try {
+            $tokenResponse = (array) JWT::decode($token, new Key(
+                config('session.JWT_KEY'),
+                'HS256'
+            ));
 
-        return $tokenResponse['company_id'];
+            return $tokenResponse['company_id'] ?? null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
-    public static function isForeignKey($table, $column)
+    public static function isForeignKey(string $table, string $column): bool
     {
-        $schemaName = config('database.connections.mysql.database'); // Database name
+        $schemaName = config('database.connections.mysql.database');
         $foreignKeys = DB::select('
-                    SELECT CONSTRAINT_NAME
-                    FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-                    WHERE TABLE_SCHEMA = ?
-                    AND TABLE_NAME = ?
-                    AND COLUMN_NAME = ?
-                    AND REFERENCED_COLUMN_NAME IS NOT NULL', [$schemaName, $table, $column]);
+            SELECT CONSTRAINT_NAME
+            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = ?
+            AND TABLE_NAME = ?
+            AND COLUMN_NAME = ?
+            AND REFERENCED_COLUMN_NAME IS NOT NULL', [$schemaName, $table, $column]);
 
-        return ! empty($foreignKeys);
+        return !empty($foreignKeys);
     }
 
-    public static function checkPermission($permission, $request)
+    public static function checkPermission(string $permission, Request $request): bool
     {
         $userPermissions = $request->get('auth_user_permissions') ?? [];
-        if (in_array($permission, $userPermissions)) {
-            return true;
-        }
 
-        return false;
+        return in_array($permission, $userPermissions, true);
     }
 
-    public static function toCamelCase($string)
+    public static function toCamelCase(string $string): string
     {
-        // make lowercase, replace spaces with underscores
         $string = strtolower(str_replace(' ', '_', $string));
 
-        // convert to camelCase
-        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $string))));
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $string), ' ')));
     }
 
-    public static function saveAttachment($file, $model, $type = null)
+    public static function saveAttachment(array $file, Model $model, ?string $type = null): void
     {
-        $originalName = $file['name'];
-        $extension = $file['extension'];
-        $id = $file['id'];
-        $uploaded_file = new UploadedFile;
-        if ($type) {
-            $uploaded_file->type = $type;
+        $originalName = $file['name'] ?? '';
+        $extension = $file['extension'] ?? '';
+        $id = $file['id'] ?? '';
+
+        $uploadedFile = new UploadedFile();
+        if ($type !== null) {
+            $uploadedFile->type = $type;
         }
-        $uploaded_file->storage_name = $id;
-        $uploaded_file->viewable_name = $originalName;
-        $uploaded_file->storage_size = $extension;
-        $uploaded_file->fileable()->associate($model);
-        $uploaded_file->save();
+        $uploadedFile->storage_name = $id;
+        $uploadedFile->viewable_name = $originalName;
+        $uploadedFile->storage_size = $extension;
+        $uploadedFile->fileable()->associate($model);
+        $uploadedFile->save();
     }
 
-    public static function removeAttachment($model, $type = null)
+    public static function removeAttachment(Model $model, ?string $type = null): void
     {
-        $uploadedFile = UploadedFile::where('fileable_id', $model->id)->where('fileable_type', get_class($model))
-            ->when($type, fn ($q) => $q->where('type', $type))->first();
+        $query = UploadedFile::where('fileable_id', $model->id)
+            ->where('fileable_type', get_class($model));
 
-        if ($uploadedFile) {
+        if ($type !== null) {
+            $query->where('type', $type);
+        }
+
+        $uploadedFile = $query->first();
+
+        if ($uploadedFile !== null) {
             $uploadedFile->delete();
         }
     }

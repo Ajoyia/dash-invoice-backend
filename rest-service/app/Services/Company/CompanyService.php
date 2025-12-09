@@ -2,11 +2,11 @@
 
 namespace App\Services\Company;
 
+use App\Exceptions\CompanyNotFoundException;
 use App\Helpers\Helper;
 use App\Models\Company;
 use App\Repositories\CompanyRepositoryInterface;
 use App\Utils\PermissionChecker;
-use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -93,8 +93,8 @@ class CompanyService implements CompanyServiceInterface
     {
         $company = $this->repository->find($id);
 
-        if (! $company) {
-            throw new Exception('Company not found');
+        if ($company === null) {
+            throw new CompanyNotFoundException();
         }
 
         return $this->repository->restore($company);
@@ -104,7 +104,11 @@ class CompanyService implements CompanyServiceInterface
     {
         $company = $this->repository->find($companyId);
 
-        return $company?->credits ?? 0.0;
+        if ($company === null) {
+            throw new CompanyNotFoundException();
+        }
+
+        return (float) ($company->credits ?? 0.0);
     }
 
     private function prepareCompanyData(array $data, Request $request): array

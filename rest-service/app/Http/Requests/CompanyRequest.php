@@ -6,22 +6,12 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CompanyRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
-     */
-    public function rules()
+    public function rules(): array
     {
         $rules = [
             'companyName' => 'required|string|unique:companies,company_name,NULL,id,deleted_at,NULL',
@@ -49,7 +39,7 @@ class CompanyRequest extends FormRequest
         return $rules;
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
             'bankDetails.*.bankName.required' => 'The bank name field is required.',
