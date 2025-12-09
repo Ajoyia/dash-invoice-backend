@@ -52,15 +52,26 @@ CMD ["php-fpm"]
 
 FROM php:8.3-fpm-alpine AS production
 
+RUN apk add --no-cache --virtual .build-deps \
+    libpng-dev \
+    libzip-dev \
+    oniguruma-dev \
+    postgresql-dev \
+    autoconf \
+    g++ \
+    make \
+    linux-headers
+
+RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring zip exif pcntl bcmath gd sockets
+
+RUN apk del .build-deps
+
 RUN apk add --no-cache \
     libpng \
     libzip \
     oniguruma \
     postgresql-libs \
-    mysql-client \
-    linux-headers
-
-RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring zip exif pcntl bcmath gd sockets
+    mysql-client
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
