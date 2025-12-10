@@ -16,12 +16,12 @@ class VatlayerService
         $this->endpoint = config('services.vatlayer.endpoint');
     }
 
-    public function validate(string $vatNumber)
+    public function validate(string $vatNumber): array
     {
         $url = $this->endpoint.'?access_key='.$this->apiKey.'&vat_number='.urlencode($vatNumber);
 
         $response = Http::get($url);
 
-        return $response->json();
+        return $response->json() ?? [];
     }
 }

@@ -29,8 +29,6 @@ The easiest way to run this project locally is using Docker:
 
 4. **Access the application**: http://localhost:8000
 
-📖 **For detailed Docker setup instructions, see [DOCKER_SETUP.md](DOCKER_SETUP.md)**
-
 ## Manual Installation (Without Docker)
 
 ### 1. Install Dependencies
