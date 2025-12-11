@@ -15,8 +15,6 @@ class InvoiceFactory extends Factory
         return [
             'company_id' => Company::factory(),
             'sender_id' => Company::factory(),
-            'reseller_id' => null,
-            'sales_partner_id' => null,
             'reference_invoice_id' => null,
             'invoice_type' => 'invoice',
             'status' => 'draft',

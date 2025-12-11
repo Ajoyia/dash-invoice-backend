@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,12 @@ Route::get('/captcha/api', function () {
 });
 
 Route::middleware(['user.permissions'])->group(function () {
+
+    //Dashboard API's
+    Route::get('dashboard', [DashboardController::class, 'index']);
+    Route::get('backoffice-dashboard', [DashboardController::class, 'backOfficeDashboard']);
+
+    //Invoice API's
     Route::get('/invoices/download/csv', [InvoiceController::class, 'downloadCSV']);
     Route::get('/invoices/download/customer-csv', [InvoiceController::class, 'downloadCustomerCSV']);
     Route::get('/invoices/download/latest-csv', [InvoiceController::class, 'downloadLatestCSV']);
@@ -25,11 +32,10 @@ Route::middleware(['user.permissions'])->group(function () {
     Route::get('global-settings/document-assignment', [InvoiceController::class, 'documentAssignmentList']);
     Route::post('global-settings/document-assignment', [InvoiceController::class, 'documentAssignmentSave']);
 
+    //Company API's
     Route::get('get-credits', [CompanyController::class, 'getCredits']);
-    Route::get('get-reseller-partner', [CompanyController::class, 'getResellerPartner']);
     Route::get('balance-history/{id}', [CompanyController::class, 'getBalanceHistory']);
     Route::get('commission-history/{id}', [CompanyController::class, 'getCommissionHistory']);
-    Route::get('referral', [CompanyController::class, 'referral']);
     Route::post('companies-import', [CompanyController::class, 'importCsv']);
     Route::post('upload-company-logo', [CompanyController::class, 'uploadCompanyLogo']);
     Route::post('delete-company-logo', [CompanyController::class, 'deleteCompanyLogo']);

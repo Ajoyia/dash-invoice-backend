@@ -49,6 +49,25 @@ class CompanyController extends Controller implements HasMiddleware
         ];
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/check-vat-id",
+     *     summary="Validate VAT ID",
+     *     description="Check if a VAT ID is valid",
+     *     operationId="CheckVatId",
+     *     tags={"Companies"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="vatId", type="string", description="VAT ID to validate")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *     )
+     * )
+     */
     public function checkVatId(Request $request): JsonResponse
     {
         $vatNumber = $request->input('vatId');
@@ -57,6 +76,47 @@ class CompanyController extends Controller implements HasMiddleware
         return response()->json($result);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/companies",
+     *     summary="Get companies list",
+     *     description="Retrieve paginated list of companies",
+     *     operationId="CompaniesList",
+     *     tags={"Companies"},
+     *     @OA\Parameter(
+     *          name="perPage",
+     *          description="Records per page (default 25)",
+     *          in="query",
+     *          @OA\Schema(type="integer"),
+     *      ),
+     *     @OA\Parameter(
+     *          name="sortBy",
+     *          description="Sort by column",
+     *          in="query",
+     *          @OA\Schema(type="string"),
+     *      ),
+     *      @OA\Parameter(
+     *         name="sortOrder",
+     *          description="Sort order (asc, desc)",
+     *          in="query",
+     *          @OA\Schema(type="string"),
+     *      ),
+     *     @OA\Parameter(
+     *         name="search",
+     *          description="Search in different columns",
+     *          in="query",
+     *          @OA\Schema(type="string"),
+     *      ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden",
+     *     )
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $isAdmin = PermissionChecker::isAdmin($request)
@@ -83,6 +143,31 @@ class CompanyController extends Controller implements HasMiddleware
         ], 200);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/companies",
+     *     summary="Create a new company",
+     *     description="Create a new company record",
+     *     operationId="CreateCompany",
+     *     tags={"Companies"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="companyName", type="string", description="Company name"),
+     *             @OA\Property(property="vatId", type="string", description="VAT ID"),
+     *             @OA\Property(property="email", type="string", description="Email address")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Company created successfully",
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *     )
+     * )
+     */
     public function store(CompanyRequest $request): JsonResponse
     {
         try {
@@ -107,6 +192,30 @@ class CompanyController extends Controller implements HasMiddleware
         }
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/companies/{id}",
+     *      operationId="getCompanyById",
+     *      tags={"Companies"},
+     *      summary="Get single company record",
+     *      description="Returns single company",
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Company ID",
+     *          in="path",
+     *          required=true,
+     *          @OA\Schema(type="string"),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *       ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Company not found",
+     *      )
+     *     )
+     */
     public function show(Request $request, string $id): JsonResponse
     {
         $result = $this->companyService->getCompanyById($id, $request);
@@ -114,6 +223,37 @@ class CompanyController extends Controller implements HasMiddleware
         return response()->json($result);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/companies/{id}",
+     *     operationId="UpdateCompany",
+     *     tags={"Companies"},
+     *     summary="Update an existing company",
+     *     description="Update company details",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Company ID",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="companyName", type="string", description="Company name"),
+     *             @OA\Property(property="vatId", type="string", description="VAT ID")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Company updated successfully",
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Company not found",
+     *     )
+     * )
+     */
     public function update(CompanyRequest $request, string $id): JsonResponse
     {
         try {
@@ -166,6 +306,30 @@ class CompanyController extends Controller implements HasMiddleware
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/companies/{id}",
+     *     operationId="DeleteCompany",
+     *     tags={"Companies"},
+     *     summary="Delete a company",
+     *     description="Delete a company by ID",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Company ID",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Company deleted successfully",
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Company not found",
+     *     )
+     * )
+     */
     public function destroy(string $id): JsonResponse
     {
         try {
@@ -215,18 +379,6 @@ class CompanyController extends Controller implements HasMiddleware
         return response()->json([
             'success' => true,
             'data' => ['credits' => $credits],
-        ]);
-    }
-
-    public function getResellerPartner(Request $request): JsonResponse
-    {
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'salesPartnerCompany' => null,
-                'resellerCompany' => null,
-                'servicePartnerCompany' => null,
-            ],
         ]);
     }
 
