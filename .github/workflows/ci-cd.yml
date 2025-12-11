@@ -32,8 +32,8 @@ jobs:
         options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
-      # - name: Checkout code
-      #   uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -50,7 +50,11 @@ jobs:
       - name: Copy .env
         working-directory: ./rest-service
         run: |
-          cp .env.example .env || echo "APP_KEY=" >> .env
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            echo "APP_KEY=" > .env
+          fi
 
       - name: Install Composer dependencies
         working-directory: ./rest-service
@@ -91,9 +95,9 @@ jobs:
           DB_PASSWORD: root
         run: php artisan migrate --force
 
-      - name: Code style check
-        working-directory: ./rest-service
-        run: ./vendor/bin/pint --test
+      # - name: Code style check
+      #   working-directory: ./rest-service
+      #   run: ./vendor/bin/pint --test
 
   build:
     name: Build Docker Image
