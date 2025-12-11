@@ -146,10 +146,21 @@ http://localhost:8000/api/documentation
 
 - Company management
 - Invoice management with products
+- Dashboard analytics and statistics
 - CSV import/export functionality
 - VAT ID validation
 - Mail template assignments
 - Global settings management
+
+## Dashboard API
+
+Dashboard endpoints provide analytics and statistics for invoices and customers with date filtering.
+
+- **Portal Dashboard** (`GET /api/dashboard`): Returns invoice statistics for the authenticated company with summary metrics and daily counts. Supports `startDate` and `endDate` query parameters.
+
+- **Backoffice Dashboard** (`GET /api/backoffice-dashboard`): Returns comprehensive statistics for invoices and customers across related companies. Supports `startDate`, `endDate`, and `customerId` query parameters.
+
+Both endpoints require Bearer token authentication.
 
 ## Code Quality Standards
 

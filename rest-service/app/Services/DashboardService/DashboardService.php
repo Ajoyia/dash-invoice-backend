@@ -85,11 +85,11 @@ class DashboardService implements DashboardServiceInterface
             return response()->json([
                 'invoices' => array_merge($invoiceSummary, [
                     'labels' => $invoiceLabels,
-                    'series' => $invoiceSeries
+                    'series' => [['name' => 'Invoices', 'data' => $invoiceSeries]]
                 ]),
                 'customers' => array_merge($customerSummary, [
                     'labels' => $customerLabels,
-                    'series' => $customerSeries
+                    'series' => [['name' => 'Customers', 'data' => $customerSeries]]
                 ]),
             ]);
         } catch (\Exception $e) {
